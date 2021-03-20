@@ -5,14 +5,16 @@ import com.example.pki.certificate.CertificateGenerator;
 import com.example.pki.keystore.KeyStoreReader;
 import com.example.pki.keystore.KeyStoreWriter;
 import com.example.pki.model.IssuerData;
+import com.example.pki.model.OCSPCertificate;
 import com.example.pki.model.SubjectData;
 import com.example.pki.model.dto.CertificateDto;
+import com.example.pki.repository.CertificateRepository;
 import com.example.pki.service.CertificateService;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.awt.*;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -22,6 +24,13 @@ public class CertificateServiceImpl implements CertificateService {
 
     private final String KEY_STORE_PASS = "123";
     private final String PASS = "123";
+
+    private final CertificateRepository certificateRepository;
+
+    @Autowired
+    public CertificateServiceImpl(CertificateRepository certificateRepository) {
+        this.certificateRepository = certificateRepository;
+    }
 
     // CertName - alias - slace se kroz front
     // keyStorePass - 123
@@ -47,16 +56,20 @@ public class CertificateServiceImpl implements CertificateService {
                 writer.write("alias", issuerData.getPrivateKey(), PASS.toCharArray(), certificate);
                 writer.saveKeyStore("data/alias", KEY_STORE_PASS.toCharArray());
                 X509Certificate certificateLoaded = (X509Certificate) reader.readCertificate("data/alias", KEY_STORE_PASS, "alias");
+
+                OCSPCertificate ocspCertificate = new OCSPCertificate("alias", null);
+                certificateRepository.save(ocspCertificate);
+
                 break;
             case Intermediate:
 
-                X509Certificate parent = (X509Certificate) reader.readCertificate("data/endEntity",
-                        KEY_STORE_PASS, "endEntity");
+                X509Certificate parent = (X509Certificate) reader.readCertificate("data/alias",
+                        KEY_STORE_PASS, "alias");
                 if (parent.getBasicConstraints() == -1) {
                     throw new CertificateIsNotCA();
                 }
 
-                issuerData = generateIssuerData(reader.readPrivateKey("data/endEntity", KEY_STORE_PASS, "endEntity", PASS), dto);
+                issuerData = generateIssuerData(reader.readPrivateKey("data/alias", KEY_STORE_PASS, "alias", PASS), dto);
                 X509Certificate certificateIntermediate = certificateGenerator.generateCertificate(subjectData, issuerData, true);
 
                 writer.loadKeyStore(null, KEY_STORE_PASS.toCharArray());
@@ -66,17 +79,21 @@ public class CertificateServiceImpl implements CertificateService {
                 X509Certificate certificateLoadedIntermediate = (X509Certificate) reader.readCertificate("data/intermediate",
                         KEY_STORE_PASS, "intermediate");
                 System.out.println(certificateLoadedIntermediate.getIssuerX500Principal().getName());
+
+                OCSPCertificate ocspCertificateIntermediate = new OCSPCertificate("intermediate", certificateRepository.findByFileName("alias"));
+                certificateRepository.save(ocspCertificateIntermediate);
+
                 break;
 
             case EndEntity:
 
-                X509Certificate endEntityParent = (X509Certificate) reader.readCertificate("data/alias",
-                        KEY_STORE_PASS, "alias");
+                X509Certificate endEntityParent = (X509Certificate) reader.readCertificate("data/intermediate",
+                        KEY_STORE_PASS, "intermediate");
                 if (endEntityParent.getBasicConstraints() == -1) {
                     throw new CertificateIsNotCA();
                 }
 
-                issuerData = generateIssuerData(reader.readPrivateKey("data/alias", KEY_STORE_PASS, "alias", PASS), dto);
+                issuerData = generateIssuerData(reader.readPrivateKey("data/intermediate", KEY_STORE_PASS, "intermediate", PASS), dto);
                 X509Certificate endEntity = certificateGenerator.generateCertificate(subjectData, issuerData, false);
 
                 writer.loadKeyStore(null, KEY_STORE_PASS.toCharArray());
@@ -86,6 +103,9 @@ public class CertificateServiceImpl implements CertificateService {
                 X509Certificate certificateLoadedEndEntity = (X509Certificate) reader.readCertificate("data/endEntity",
                         KEY_STORE_PASS, "endEntity");
                 System.out.println(certificateLoadedEndEntity.getIssuerX500Principal().getName());
+
+                OCSPCertificate ocspCertificateEndEntity = new OCSPCertificate("endEntity", certificateRepository.findByFileName("intermediate"));
+                certificateRepository.save(ocspCertificateEndEntity);
         }
     }
 

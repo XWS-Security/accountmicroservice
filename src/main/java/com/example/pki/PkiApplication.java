@@ -37,8 +37,8 @@ public class PkiApplication {
         CertificateController certificateController = (CertificateController) ctx.getBean("certificateController");
 
         certificateController.generateCertificate(cd);
-        certificateController.generateCertificate(endEntity);
         certificateController.generateCertificate(intermediate);
+        certificateController.generateCertificate(endEntity);
     }
 
 }
