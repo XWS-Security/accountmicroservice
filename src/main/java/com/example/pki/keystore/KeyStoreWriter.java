@@ -28,7 +28,7 @@ public class KeyStoreWriter {
 
     public void loadKeyStore(String fileName, char[] password) {
         try {
-            if(fileName != null) {
+            if (fileName != null) {
                 keyStore.load(new FileInputStream(fileName), password);
             } else {
                 //Ako je cilj kreirati novi KeyStore poziva se i dalje load, pri cemu je prvi parametar null
@@ -45,7 +45,7 @@ public class KeyStoreWriter {
         }
     }
 
-    public void saveKeyStore(String fileName, char[] password) {
+    public void saveKeyStore(String fileName, char[] password) { //Keystore
         try {
             keyStore.store(new FileOutputStream(fileName), password);
         } catch (KeyStoreException e) {
@@ -61,9 +61,9 @@ public class KeyStoreWriter {
         }
     }
 
-    public void write(String alias, PrivateKey privateKey, char[] password, Certificate certificate) {
+    public void write(String alias, PrivateKey privateKey, char[] password, Certificate certificate) { //za private key
         try {
-            keyStore.setKeyEntry(alias, privateKey, password, new Certificate[] {certificate});
+            keyStore.setKeyEntry(alias, privateKey, password, new Certificate[]{certificate});
         } catch (KeyStoreException e) {
             e.printStackTrace();
         }
