@@ -14,15 +14,14 @@ public class OCSPCertificate {
     @Column
     private String fileName;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "issuer_id", referencedColumnName = "id")
     private OCSPCertificate issuer;
 
     public OCSPCertificate() {
     }
 
-    public OCSPCertificate(Long id, String fileName, OCSPCertificate issuer) {
-        this.id = id;
+    public OCSPCertificate(String fileName, OCSPCertificate issuer) {
         this.fileName = fileName;
         this.issuer = issuer;
     }
