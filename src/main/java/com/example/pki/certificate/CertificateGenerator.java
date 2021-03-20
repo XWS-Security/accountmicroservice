@@ -8,6 +8,9 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -18,9 +21,10 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 public class CertificateGenerator {
 
-    public CertificateGenerator() {}
+    public CertificateGenerator() {
+    }
 
-    public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData) {
+    public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, boolean CA) {
         try {
             JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA256WithRSAEncryption");
             builder = builder.setProvider("BC");
@@ -33,6 +37,10 @@ public class CertificateGenerator {
                     subjectData.getEndDate(),
                     subjectData.getX500name(),
                     subjectData.getPublicKey());
+
+            if (!CA) {
+                certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
+            }
 
             X509CertificateHolder certHolder = certGen.build(contentSigner);
 
@@ -50,6 +58,8 @@ public class CertificateGenerator {
         } catch (OperatorCreationException e) {
             e.printStackTrace();
         } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (CertIOException e) {
             e.printStackTrace();
         }
         return null;
