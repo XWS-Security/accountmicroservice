@@ -26,11 +26,19 @@ public class PkiApplication {
         CertificateDto cd = new CertificateDto(CA.Root, Calendar.getInstance().getTime(),
                 cal.getTime(), "123", "321");
 
+        CertificateDto intermediate = new CertificateDto(CA.Intermediate, Calendar.getInstance().getTime(),
+                cal.getTime(), "321", "456");
+
+        CertificateDto endEntity = new CertificateDto(CA.EndEntity, Calendar.getInstance().getTime(),
+                cal.getTime(), "456", "789");
+
         ApplicationContext ctx = SpringApplication.run(PkiApplication.class, args);
 
         CertificateController certificateController = (CertificateController) ctx.getBean("certificateController");
 
         certificateController.generateCertificate(cd);
+        certificateController.generateCertificate(endEntity);
+        certificateController.generateCertificate(intermediate);
     }
 
 }

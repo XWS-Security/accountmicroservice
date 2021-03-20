@@ -8,6 +8,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.CertIOException;
@@ -37,11 +38,7 @@ public class CertificateGenerator {
                     subjectData.getStartDate(),
                     subjectData.getEndDate(),
                     subjectData.getX500name(),
-                    subjectData.getPublicKey());
-
-            if (!CA) {
-                certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
-            }
+                    subjectData.getPublicKey()).addExtension(new ASN1ObjectIdentifier("2.5.29.19"), true, new BasicConstraints(CA));
 
             X509CertificateHolder certHolder = certGen.build(contentSigner);
 
