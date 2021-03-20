@@ -1,5 +1,6 @@
 package com.example.pki.service.impl;
 
+import Exceptions.CertificateIsNotCA;
 import com.example.pki.certificate.CertificateGenerator;
 import com.example.pki.keystore.KeyStoreReader;
 import com.example.pki.keystore.KeyStoreWriter;
@@ -11,6 +12,7 @@ import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -44,19 +46,46 @@ public class CertificateServiceImpl implements CertificateService {
                 writer.loadKeyStore(null, KEY_STORE_PASS.toCharArray());
                 writer.write("alias", issuerData.getPrivateKey(), PASS.toCharArray(), certificate);
                 writer.saveKeyStore("data/alias", KEY_STORE_PASS.toCharArray());
-
                 X509Certificate certificateLoaded = (X509Certificate) reader.readCertificate("data/alias", KEY_STORE_PASS, "alias");
-                System.out.println(certificateLoaded.getIssuerX500Principal().getName());
-
-                PrivateKey privateKey = reader.readPrivateKey("data/alias", KEY_STORE_PASS, "alias", PASS);
-                System.out.println(privateKey);
-
+                break;
             case Intermediate:
-                issuerData = generateIssuerData(keyPairSubject.getPrivate(), dto);
-                certificateGenerator.generateCertificate(subjectData, issuerData, true);
+
+                X509Certificate parent = (X509Certificate) reader.readCertificate("data/endEntity",
+                        KEY_STORE_PASS, "endEntity");
+                if (parent.getBasicConstraints() == -1) {
+                    throw new CertificateIsNotCA();
+                }
+
+                issuerData = generateIssuerData(reader.readPrivateKey("data/endEntity", KEY_STORE_PASS, "endEntity", PASS), dto);
+                X509Certificate certificateIntermediate = certificateGenerator.generateCertificate(subjectData, issuerData, true);
+
+                writer.loadKeyStore(null, KEY_STORE_PASS.toCharArray());
+                writer.write("intermediate", issuerData.getPrivateKey(), PASS.toCharArray(), certificateIntermediate);
+                writer.saveKeyStore("data/intermediate", KEY_STORE_PASS.toCharArray());
+
+                X509Certificate certificateLoadedIntermediate = (X509Certificate) reader.readCertificate("data/intermediate",
+                        KEY_STORE_PASS, "intermediate");
+                System.out.println(certificateLoadedIntermediate.getIssuerX500Principal().getName());
+                break;
+
             case EndEntity:
-                issuerData = generateIssuerData(keyPairSubject.getPrivate(), dto);
-                certificateGenerator.generateCertificate(subjectData, issuerData, false);
+
+                X509Certificate endEntityParent = (X509Certificate) reader.readCertificate("data/alias",
+                        KEY_STORE_PASS, "alias");
+                if (endEntityParent.getBasicConstraints() == -1) {
+                    throw new CertificateIsNotCA();
+                }
+
+                issuerData = generateIssuerData(reader.readPrivateKey("data/alias", KEY_STORE_PASS, "alias", PASS), dto);
+                X509Certificate endEntity = certificateGenerator.generateCertificate(subjectData, issuerData, false);
+
+                writer.loadKeyStore(null, KEY_STORE_PASS.toCharArray());
+                writer.write("endEntity", issuerData.getPrivateKey(), PASS.toCharArray(), endEntity);
+                writer.saveKeyStore("data/endEntity", KEY_STORE_PASS.toCharArray());
+
+                X509Certificate certificateLoadedEndEntity = (X509Certificate) reader.readCertificate("data/endEntity",
+                        KEY_STORE_PASS, "endEntity");
+                System.out.println(certificateLoadedEndEntity.getIssuerX500Principal().getName());
         }
     }
 
