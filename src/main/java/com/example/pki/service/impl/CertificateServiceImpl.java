@@ -12,10 +12,18 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.stereotype.Service;
 
 import java.security.*;
+import java.security.cert.X509Certificate;
 import java.util.Date;
 
 @Service
 public class CertificateServiceImpl implements CertificateService {
+
+    private final String KEY_STORE_PASS = "123";
+    private final String PASS = "123";
+
+    // CertName - alias - slace se kroz front
+    // keyStorePass - 123
+    // pass - 123
 
     @Override
     public void generateCertificate(CertificateDto dto) {
@@ -32,7 +40,17 @@ public class CertificateServiceImpl implements CertificateService {
         switch (dto.getCa()) {
             case Root:
                 issuerData = generateIssuerData(pair.privateKey, dto);
-                certificateGenerator.generateCertificate(subjectData, issuerData, true);
+                X509Certificate certificate = certificateGenerator.generateCertificate(subjectData, issuerData, true);
+                writer.loadKeyStore(null, KEY_STORE_PASS.toCharArray());
+                writer.write("alias", issuerData.getPrivateKey(), PASS.toCharArray(), certificate);
+                writer.saveKeyStore("data/alias", KEY_STORE_PASS.toCharArray());
+
+                X509Certificate certificateLoaded = (X509Certificate) reader.readCertificate("data/alias", KEY_STORE_PASS, "alias");
+                System.out.println(certificateLoaded.getIssuerX500Principal().getName());
+
+                PrivateKey privateKey = reader.readPrivateKey("data/alias", KEY_STORE_PASS, "alias", PASS);
+                System.out.println(privateKey);
+
             case Intermediate:
                 issuerData = generateIssuerData(keyPairSubject.getPrivate(), dto);
                 certificateGenerator.generateCertificate(subjectData, issuerData, true);

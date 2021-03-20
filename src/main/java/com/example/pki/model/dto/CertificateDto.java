@@ -15,7 +15,7 @@ public class CertificateDto {
     public CertificateDto() {
     }
 
-    public CertificateDto(CA ca, Date startDate, Date endDate, String issuerName, String issuerUid, String subjectName, String subjectUid) {
+    public CertificateDto(CA ca, Date startDate, Date endDate, String issuerUid, String subjectUid) {
         this.ca = ca;
         this.startDate = startDate;
         this.endDate = endDate;
