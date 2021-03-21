@@ -60,8 +60,6 @@ public class CertificateServiceImpl implements CertificateService {
             throw new CertificateAlreadyExists();
         }
 
-        System.out.println(dto);
-
         switch (dto.getCa()) {
 
             case Root:
@@ -170,13 +168,7 @@ public class CertificateServiceImpl implements CertificateService {
         return !(isAnyInChainOutdated(certificateAlias) || isAnyInChainRevoked(certificateAlias));
     }
 
-    @Override
-    public Iterable<OCSPCertificate> getAllCertificates() {
-        return certificateRepository.findAll();
-    }
-
-    @Override
-    public List<CertificateDto> getCACertificates() {
+    public List<CertificateDto> getCertificates(boolean onlyCA) {
         KeyStoreReader reader = new KeyStoreReader();
         List<OCSPCertificate> ocspCertificates = (List<OCSPCertificate>) certificateRepository.findAll();
         List<CertificateDto> certificateDtos = new ArrayList<>();
@@ -185,11 +177,14 @@ public class CertificateServiceImpl implements CertificateService {
             String certificateName = ocspCertificate.getFileName();
             X509Certificate certificate = (X509Certificate) reader.readCertificate("data/" + certificateName,
                     KEY_STORE_PASS, certificateName);
+
+            CertificateDto certificateDto = new CertificateDto();
+            certificateDto.setStartDate(certificate.getNotBefore());
+            certificateDto.setEndDate(certificate.getNotAfter());
+            certificateDto.setCertificateName(ocspCertificate.getFileName());
+
             if (certificate.getBasicConstraints() != -1) {
-                CertificateDto certificateDto = new CertificateDto();
-                certificateDto.setStartDate(certificate.getNotBefore());
-                certificateDto.setEndDate(certificate.getNotAfter());
-                certificateDto.setCertificateName(ocspCertificate.getFileName());
+
                 if (ocspCertificate.getIssuer() == null) {
                     certificateDto.setCa(CA.Root);
                     certificateDto.setParentName("Self-signed");
@@ -197,6 +192,10 @@ public class CertificateServiceImpl implements CertificateService {
                     certificateDto.setCa(CA.Intermediate);
                     certificateDto.setParentName(ocspCertificate.getIssuer().getFileName());
                 }
+                certificateDtos.add(certificateDto);
+            } else if (!onlyCA) {
+                certificateDto.setCa(CA.EndEntity);
+                certificateDto.setParentName(ocspCertificate.getIssuer().getFileName());
                 certificateDtos.add(certificateDto);
             }
         });

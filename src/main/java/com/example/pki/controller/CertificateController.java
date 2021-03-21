@@ -1,6 +1,7 @@
 package com.example.pki.controller;
 
 import Exceptions.CertificateAlreadyExists;
+import Exceptions.CertificateIsNotCA;
 import Exceptions.CertificateIsNotValid;
 import com.example.pki.model.dto.CertificateDto;
 import com.example.pki.service.CertificateService;
@@ -32,11 +33,18 @@ public class CertificateController {
             return new ResponseEntity<>("Certificate with that name already exists!", HttpStatus.BAD_REQUEST);
         } catch (CertificateIsNotValid e) {
             return new ResponseEntity<>("Certificate is not valid!", HttpStatus.BAD_REQUEST);
+        } catch (CertificateIsNotCA e) {
+            return new ResponseEntity<>("Certificate is not CA!", HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("/getCA")
     public ResponseEntity<List<CertificateDto>> getCACertificates() {
-        return new ResponseEntity<>(certificateService.getCACertificates(), HttpStatus.OK);
+        return new ResponseEntity<>(certificateService.getCertificates(true), HttpStatus.OK);
+    }
+
+    @GetMapping("/getAllCertificates")
+    public ResponseEntity<List<CertificateDto>> getAllCertificates() {
+        return new ResponseEntity<>(certificateService.getCertificates(false), HttpStatus.OK);
     }
 }
