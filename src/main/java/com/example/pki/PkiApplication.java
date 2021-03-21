@@ -24,13 +24,13 @@ public class PkiApplication {
         cal.add(Calendar.MONTH, 2);
 
         CertificateDto cd = new CertificateDto(CA.Root, Calendar.getInstance().getTime(),
-                cal.getTime(), "123", "321");
+                cal.getTime(), "123", "321", "root", null);
 
         CertificateDto intermediate = new CertificateDto(CA.Intermediate, Calendar.getInstance().getTime(),
-                cal.getTime(), "321", "456");
+                cal.getTime(), "321", "456", "intermediate", "root");
 
         CertificateDto endEntity = new CertificateDto(CA.EndEntity, Calendar.getInstance().getTime(),
-                cal.getTime(), "456", "789");
+                cal.getTime(), "456", "789", "endEntity", "intermediate");
 
         ApplicationContext ctx = SpringApplication.run(PkiApplication.class, args);
 

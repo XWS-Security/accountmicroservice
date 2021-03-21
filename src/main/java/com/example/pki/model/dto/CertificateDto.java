@@ -11,16 +11,21 @@ public class CertificateDto {
     private Date endDate;
     private String issuerUid;
     private String subjectUid;
+    private String certificateName;
+    private String parentName;
 
     public CertificateDto() {
     }
 
-    public CertificateDto(CA ca, Date startDate, Date endDate, String issuerUid, String subjectUid) {
+    public CertificateDto(CA ca, Date startDate, Date endDate, String issuerUid, String subjectUid, String certificateName,
+    String parentName) {
         this.ca = ca;
         this.startDate = startDate;
         this.endDate = endDate;
         this.issuerUid = issuerUid;
         this.subjectUid = subjectUid;
+        this.certificateName = certificateName;
+        this.parentName = parentName;
     }
 
     public CA getCa() {
@@ -61,5 +66,21 @@ public class CertificateDto {
 
     public void setSubjectUid(String subjectUid) {
         this.subjectUid = subjectUid;
+    }
+
+    public String getCertificateName() {
+        return certificateName;
+    }
+
+    public void setCertificateName(String certificateName) {
+        this.certificateName = certificateName;
+    }
+
+    public String getParentName() {
+        return parentName;
+    }
+
+    public void setParentName(String parentName) {
+        this.parentName = parentName;
     }
 }
