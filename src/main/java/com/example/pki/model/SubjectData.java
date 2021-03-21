@@ -1,11 +1,12 @@
 package com.example.pki.model;
 
+import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.Date;
 
 import org.bouncycastle.asn1.x500.X500Name;
 
-public class SubjectData {
+public class SubjectData implements Serializable {
 
     private PublicKey publicKey;
     private X500Name x500name;

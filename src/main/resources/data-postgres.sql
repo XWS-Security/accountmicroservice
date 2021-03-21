@@ -1,2 +1,3 @@
-INSERT INTO ocsp_cert(id, file_name, issuer_id) VALUES (1, 'cert1.pem', 1);
-INSERT INTO ocsp_cert(id, file_name, issuer_id) VALUES (2, 'cert2.pem', 1);
+INSERT INTO ocsp_cert(id, file_name, is_revoked, issuer_id) VALUES ('100', 'root', false, null);
+INSERT INTO ocsp_cert(id, file_name, is_revoked, issuer_id) VALUES ('101', 'intermediate', false, 100);
+INSERT INTO ocsp_cert(id, file_name, is_revoked, issuer_id) VALUES ('102', 'endEntity', false, 101);

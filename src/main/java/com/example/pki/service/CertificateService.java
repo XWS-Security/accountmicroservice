@@ -3,7 +3,6 @@ package com.example.pki.service;
 import com.example.pki.model.OCSPCertificate;
 import com.example.pki.model.dto.CertificateDto;
 
-import java.security.cert.X509Certificate;
 import java.util.List;
 
 public interface CertificateService {
@@ -19,5 +18,5 @@ public interface CertificateService {
 
     Iterable<OCSPCertificate> getAllCertificates();
 
-    List<X509Certificate> getCACertificates();
+    List<CertificateDto> getCACertificates();
 }

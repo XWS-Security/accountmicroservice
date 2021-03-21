@@ -47,6 +47,9 @@ public class KeyStoreWriter {
 
     public void saveKeyStore(String fileName, char[] password) { //Keystore
         try {
+            System.out.println(keyStore);
+            System.out.println(password);
+            System.out.println(fileName);
             keyStore.store(new FileOutputStream(fileName), password);
         } catch (KeyStoreException e) {
             e.printStackTrace();

@@ -1,15 +1,16 @@
 package com.example.pki.controller;
 
+import Exceptions.CertificateAlreadyExists;
+import Exceptions.CertificateIsNotValid;
 import com.example.pki.model.dto.CertificateDto;
 import com.example.pki.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/certificate", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -22,9 +23,20 @@ public class CertificateController {
         this.certificateService = certificateService;
     }
 
-    @PostMapping("/")
-    public ResponseEntity<String> generateCertificate(@RequestBody CertificateDto promotionDto) {
-        certificateService.generateCertificate(promotionDto);
-        return new ResponseEntity<>("Promotion successfully added!", HttpStatus.OK);
+    @PostMapping("/createCertificate")
+    public ResponseEntity<String> generateCertificate(@RequestBody CertificateDto certificateDto) {
+        try {
+            certificateService.generateCertificate(certificateDto);
+            return new ResponseEntity<>("Certificate successfully added!", HttpStatus.OK);
+        } catch (CertificateAlreadyExists e) {
+            return new ResponseEntity<>("Certificate with that name already exists!", HttpStatus.BAD_REQUEST);
+        } catch (CertificateIsNotValid e) {
+            return new ResponseEntity<>("Certificate is not valid!", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/getCA")
+    public ResponseEntity<List<CertificateDto>> getCACertificates() {
+        return new ResponseEntity<>(certificateService.getCACertificates(), HttpStatus.OK);
     }
 }
