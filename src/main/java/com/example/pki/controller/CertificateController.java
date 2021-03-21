@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @RestController
@@ -46,5 +47,15 @@ public class CertificateController {
     @GetMapping("/getAllCertificates")
     public ResponseEntity<List<CertificateDto>> getAllCertificates() {
         return new ResponseEntity<>(certificateService.getCertificates(false), HttpStatus.OK);
+    }
+
+    @PostMapping("/revoke")
+    public ResponseEntity<String> revokeCertificate(@RequestBody CertificateDto certificateDto) {
+        try {
+            certificateService.changeCertificateStatus(certificateDto.getCertificateName());
+            return new ResponseEntity<>("Certificate successfully revoked!", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Something went wrong!", HttpStatus.BAD_REQUEST);
+        }
     }
 }
