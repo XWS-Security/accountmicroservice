@@ -2,9 +2,10 @@ package com.example.pki.model.dto;
 
 import com.example.pki.model.enums.CA;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class CertificateDto {
+public class CertificateDto implements Serializable {
 
     private CA ca;
     private Date startDate;
@@ -17,13 +18,11 @@ public class CertificateDto {
     public CertificateDto() {
     }
 
-    public CertificateDto(CA ca, Date startDate, Date endDate, String issuerUid, String subjectUid, String certificateName,
+    public CertificateDto(CA ca, Date startDate, Date endDate, String certificateName,
     String parentName) {
         this.ca = ca;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.issuerUid = issuerUid;
-        this.subjectUid = subjectUid;
         this.certificateName = certificateName;
         this.parentName = parentName;
     }
