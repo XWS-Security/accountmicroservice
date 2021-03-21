@@ -128,7 +128,7 @@ public class CertificateServiceImpl implements CertificateService {
     @Override
     public void changeCertificateStatus(String certificateAlias) {
         OCSPCertificate certificate = certificateRepository.findByFileName(certificateAlias);
-        certificate.setRevoked(false);
+        certificate.setRevoked(true);
         certificateRepository.save(certificate);
     }
 
