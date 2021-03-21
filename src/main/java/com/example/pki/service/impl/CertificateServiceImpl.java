@@ -128,7 +128,7 @@ public class CertificateServiceImpl implements CertificateService {
     @Override
     public void changeCertificateStatus(String certificateAlias) {
         OCSPCertificate certificate = certificateRepository.findByFileName(certificateAlias);
-        certificate.setRevoked(!certificate.isRevoked());
+        certificate.setRevoked(false);
         certificateRepository.save(certificate);
     }
 
@@ -182,6 +182,7 @@ public class CertificateServiceImpl implements CertificateService {
             certificateDto.setStartDate(certificate.getNotBefore());
             certificateDto.setEndDate(certificate.getNotAfter());
             certificateDto.setCertificateName(ocspCertificate.getFileName());
+            certificateDto.setRevoked(ocspCertificate.isRevoked());
 
             if (certificate.getBasicConstraints() != -1) {
 
