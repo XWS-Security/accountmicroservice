@@ -17,8 +17,9 @@ import org.springframework.stereotype.Service;
 
 import java.security.*;
 import java.security.cert.X509Certificate;
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class CertificateServiceImpl implements CertificateService {
@@ -52,6 +53,7 @@ public class CertificateServiceImpl implements CertificateService {
         String parentName = dto.getParentName();
 
         switch (dto.getCa()) {
+
             case Root:
                 issuerData = generateIssuerData(pair.privateKey, dto);
                 X509Certificate certificate = certificateGenerator.generateCertificate(subjectData, issuerData, true);
@@ -64,6 +66,7 @@ public class CertificateServiceImpl implements CertificateService {
                 OCSPCertificate ocspCertificate = new OCSPCertificate(certificateName, null);
                 certificateRepository.save(ocspCertificate);
                 break;
+
             case Intermediate:
 
                 X509Certificate parent = (X509Certificate) reader.readCertificate("data/" + parentName,
@@ -85,8 +88,8 @@ public class CertificateServiceImpl implements CertificateService {
 
                 OCSPCertificate ocspCertificateIntermediate = new OCSPCertificate(certificateName, certificateRepository.findByFileName(parentName));
                 certificateRepository.save(ocspCertificateIntermediate);
-
                 break;
+
             case EndEntity:
 
                 X509Certificate endEntityParent = (X509Certificate) reader.readCertificate("data/" + parentName,
@@ -156,6 +159,29 @@ public class CertificateServiceImpl implements CertificateService {
         return !(isAnyInChainOutdated(certificateAlias) || isAnyInChainRevoked(certificateAlias));
     }
 
+    @Override
+    public Iterable<OCSPCertificate> getAllCertificates() {
+        return certificateRepository.findAll();
+    }
+
+    @Override
+    public List<X509Certificate> getCACertificates() {
+        KeyStoreReader reader = new KeyStoreReader();
+        List<OCSPCertificate> ocspCertificates = (List<OCSPCertificate>) certificateRepository.findAll();
+        List<X509Certificate> CAcertificates = new ArrayList<>();
+
+        ocspCertificates.forEach(ocspCertificate -> {
+            String certificateName = ocspCertificate.getFileName();
+            X509Certificate certificate = (X509Certificate) reader.readCertificate("data/" + certificateName,
+                    KEY_STORE_PASS, certificateName);
+            if (certificate.getBasicConstraints() != -1) {
+                CAcertificates.add(certificate);
+            }
+        });
+
+        return CAcertificates;
+    }
+
     private KeyPair generateKeyPair() {
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
@@ -202,5 +228,4 @@ public class CertificateServiceImpl implements CertificateService {
             this.privateKey = privateKey;
         }
     }
-
 }
