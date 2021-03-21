@@ -1,6 +1,5 @@
 package com.example.pki.service;
 
-import com.example.pki.model.OCSPCertificate;
 import com.example.pki.model.dto.CertificateDto;
 
 import java.util.List;
@@ -16,7 +15,5 @@ public interface CertificateService {
 
     boolean isCertificateValid(String certificateAlias);
 
-    Iterable<OCSPCertificate> getAllCertificates();
-
-    List<CertificateDto> getCACertificates();
+    List<CertificateDto> getCertificates(boolean onlyCA);
 }
