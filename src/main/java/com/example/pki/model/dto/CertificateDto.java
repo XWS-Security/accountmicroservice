@@ -15,18 +15,28 @@ public class CertificateDto implements Serializable {
     private String certificateName;
     private String parentName;
     private boolean revoked;
+    private boolean valid;
 
     public CertificateDto() {
     }
 
     public CertificateDto(CA ca, Date startDate, Date endDate, String certificateName,
-    String parentName, boolean revoked) {
+    String parentName, boolean revoked, boolean valid) {
         this.ca = ca;
         this.startDate = startDate;
         this.endDate = endDate;
         this.certificateName = certificateName;
         this.parentName = parentName;
         this.revoked = revoked;
+        this.valid = valid;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 
     public boolean isRevoked() {

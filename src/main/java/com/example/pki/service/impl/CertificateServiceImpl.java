@@ -183,6 +183,7 @@ public class CertificateServiceImpl implements CertificateService {
             certificateDto.setEndDate(certificate.getNotAfter());
             certificateDto.setCertificateName(ocspCertificate.getFileName());
             certificateDto.setRevoked(ocspCertificate.isRevoked());
+            certificateDto.setValid(isCertificateValid(ocspCertificate.getFileName()));
 
             if (certificate.getBasicConstraints() != -1) {
 
