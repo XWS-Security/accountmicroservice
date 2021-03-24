@@ -31,26 +31,14 @@ public class KeyStoreReader {
             e.printStackTrace();
         }
     }
-    /**
-     * Zadatak ove funkcije jeste da ucita podatke o izdavaocu i odgovarajuci privatni kljuc.
-     * Ovi podaci se mogu iskoristiti da se novi sertifikati izdaju.
-     *
-     * @param keyStoreFile - datoteka odakle se citaju podaci
-     * @param alias - alias putem kog se identifikuje sertifikat izdavaoca
-     * @param password - lozinka koja je neophodna da se otvori key store
-     * @param keyPass - lozinka koja je neophodna da se izvuce privatni kljuc
-     * @return - podatke o izdavaocu i odgovarajuci privatni kljuc
-     */
+
     public IssuerData readIssuerFromStore(String keyStoreFile, String alias, char[] password, char[] keyPass) {
         try {
-            //Datoteka se ucitava
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStoreFile));
             keyStore.load(in, password);
-            //Iscitava se sertifikat koji ima dati alias
             Certificate cert = keyStore.getCertificate(alias);
-            //Iscitava se privatni kljuc vezan za javni kljuc koji se nalazi na sertifikatu sa datim aliasom
-            PrivateKey privKey = (PrivateKey) keyStore.getKey(alias, keyPass);
 
+            PrivateKey privKey = (PrivateKey) keyStore.getKey(alias, keyPass);
             X500Name issuerName = new JcaX509CertificateHolder((X509Certificate) cert).getSubject();
             return new IssuerData(privKey, issuerName);
         } catch (KeyStoreException e) {
@@ -69,14 +57,10 @@ public class KeyStoreReader {
         return null;
     }
 
-    /**
-     * Ucitava sertifikat is KS fajla
-     */
     public Certificate readCertificate(String keyStoreFile, String keyStorePass, String alias) {
         try {
-            //kreiramo instancu KeyStore
             KeyStore ks = KeyStore.getInstance("JKS", "SUN");
-            //ucitavamo podatke
+
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStoreFile));
             ks.load(in, keyStorePass.toCharArray());
 
@@ -100,14 +84,10 @@ public class KeyStoreReader {
         return null;
     }
 
-    /**
-     * Ucitava privatni kljuc is KS fajla
-     */
     public PrivateKey readPrivateKey(String keyStoreFile, String keyStorePass, String alias, String pass) {
         try {
-            //kreiramo instancu KeyStore
             KeyStore ks = KeyStore.getInstance("JKS", "SUN");
-            //ucitavamo podatke
+
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStoreFile));
             ks.load(in, keyStorePass.toCharArray());
 

@@ -43,7 +43,6 @@ public class CertificateGenerator {
             JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
             certConverter = certConverter.setProvider("BC");
 
-            //Konvertuje objekat u sertifikat
             return certConverter.getCertificate(certHolder);
         } catch (CertificateEncodingException e) {
             e.printStackTrace();
