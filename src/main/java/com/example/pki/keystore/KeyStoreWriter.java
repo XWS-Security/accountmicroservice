@@ -31,7 +31,6 @@ public class KeyStoreWriter {
             if (fileName != null) {
                 keyStore.load(new FileInputStream(fileName), password);
             } else {
-                //Ako je cilj kreirati novi KeyStore poziva se i dalje load, pri cemu je prvi parametar null
                 keyStore.load(null, password);
             }
         } catch (NoSuchAlgorithmException e) {
@@ -47,9 +46,6 @@ public class KeyStoreWriter {
 
     public void saveKeyStore(String fileName, char[] password) { //Keystore
         try {
-            System.out.println(keyStore);
-            System.out.println(password);
-            System.out.println(fileName);
             keyStore.store(new FileOutputStream(fileName), password);
         } catch (KeyStoreException e) {
             e.printStackTrace();
