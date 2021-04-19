@@ -5,7 +5,7 @@ import com.example.pki.mail.MailService;
 import com.example.pki.model.Authority;
 import com.example.pki.model.InstagramUser;
 import com.example.pki.model.User;
-import com.example.pki.model.dto.LogInDto;
+import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.service.AuthorityService;
 import com.example.pki.service.RegisterService;
@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.mail.MessagingException;
 import java.util.List;
 
 @Service
@@ -37,10 +38,12 @@ public class RegisterServiceImpl implements RegisterService {
     }
 
     @Override
-    public InstagramUser register(LogInDto dto, String siteURL) {
-
+    public InstagramUser register(RegisterDto dto, String siteURL) throws MessagingException {
         InstagramUser user = new InstagramUser();
         List<Authority> auth = authService.findByname(user.getAdministrationRole());
+
+        user.setPassword(dto.getPassword());
+        user.setEmail(dto.getEmail());
         user.setAuthorities(auth);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         String activationCode = RandomString.make(64);
@@ -49,7 +52,7 @@ public class RegisterServiceImpl implements RegisterService {
             throw new RuntimeException();
         }*/
         user = userRepository.save(user);
-        sendActivationLink(user, siteURL);
+       // sendActivationLink(user, siteURL);
         return user;
     }
 
@@ -88,7 +91,7 @@ public class RegisterServiceImpl implements RegisterService {
         return false;
     }
 
-    private void sendActivationLink(InstagramUser instagramUser, String siteUrl)  {
+    private void sendActivationLink(InstagramUser instagramUser, String siteUrl) throws MessagingException {
         String verifyURL = siteUrl + "/activation?code=" + instagramUser.getActivationCode() + "&email=" + instagramUser.getEmail();
         mailService.sendMail(instagramUser.getEmail(), verifyURL, new AccountActivationLinkMailFormatter());
     }
