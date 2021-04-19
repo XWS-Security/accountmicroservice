@@ -1,5 +1,9 @@
 package com.example.pki.controller;
 
+import Exceptions.BadActivationCodeException;
+import Exceptions.BadUserInformationException;
+import Exceptions.PasswordIsNotValid;
+import Exceptions.PasswordsDoNotMatch;
 import com.example.pki.model.dto.ActivateDto;
 import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.service.RegisterService;
@@ -20,11 +24,13 @@ import javax.servlet.http.HttpServletRequest;
 public class RegisterController {
 
     @Qualifier("registerServiceImpl")
-    private RegisterService registerService;
+    private final RegisterService registerService;
 
     private final static String userExistsAlert = "User with that mail address already exists!";
+    private final static String passwordIsNotValid = "Password must contain one uppercase letter, one special character, and digit! Minimum length is 10 characters";
+    private final static String passwordDoNotMatch = "Passwords must match!";
     private final static String registrationFailedAlert = "Registration failed!";
-    private final static String missingBasicUserInfoAlert = "Registration failed! Missing name, email or password";
+    private final static String missingBasicUserInfoAlert = "Registration failed! Missing email or password";
 
     @Autowired
     public RegisterController(RegisterService registerService) {
@@ -39,20 +45,20 @@ public class RegisterController {
         if (this.registerService.userExists(dto.getEmail())) {
             return new ResponseEntity<>(userExistsAlert, HttpStatus.BAD_REQUEST);
         }
+
         try {
             this.registerService.register(dto, getSiteURL(request));
             return new ResponseEntity<>("/emailSent", HttpStatus.OK);
-       /* } catch (BadUserInformationException e) {
+        } catch (BadUserInformationException e) {
             return new ResponseEntity<>(userExistsAlert, HttpStatus.BAD_REQUEST);
-        } */
+        } catch (PasswordIsNotValid e) {
+            return new ResponseEntity<>(passwordIsNotValid, HttpStatus.BAD_REQUEST);
+        } catch (PasswordsDoNotMatch e) {
+            return new ResponseEntity<>(passwordDoNotMatch, HttpStatus.BAD_REQUEST);
         }
-            catch (Exception e) {
+        catch(Exception e){
             return new ResponseEntity<>(registrationFailedAlert, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    private boolean validUserInfo(String email, String password) {
-        return email != null && !email.isEmpty() && password != null && !password.isEmpty();
     }
 
     @PostMapping("/activate")
@@ -62,12 +68,16 @@ public class RegisterController {
         try {
             this.registerService.activate(email, code);
             return new ResponseEntity<>("/activation/success", HttpStatus.OK);
-        } catch (RuntimeException e) {
+        } catch (BadActivationCodeException e) {
             return new ResponseEntity<>("/activation/failed", HttpStatus.BAD_REQUEST);
         }
     }
 
     private String getSiteURL(HttpServletRequest request) {
         return request.getHeader("origin");
+    }
+
+    private boolean validUserInfo(String email, String password) {
+        return email != null && !email.isEmpty() && password != null && !password.isEmpty();
     }
 }
