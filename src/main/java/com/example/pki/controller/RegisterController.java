@@ -1,7 +1,7 @@
 package com.example.pki.controller;
 
 import com.example.pki.model.dto.ActivateDto;
-import com.example.pki.model.dto.LogInDto;
+import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,7 +32,7 @@ public class RegisterController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<String> registerUser(HttpServletRequest request, @RequestBody LogInDto dto) {
+    public ResponseEntity<String> registerUser(HttpServletRequest request, @RequestBody RegisterDto dto) {
         if (!validUserInfo(dto.getEmail(), dto.getPassword())) {
             return new ResponseEntity<>(missingBasicUserInfoAlert, HttpStatus.BAD_REQUEST);
         }
@@ -50,7 +50,6 @@ public class RegisterController {
             return new ResponseEntity<>(registrationFailedAlert, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
     private boolean validUserInfo(String email, String password) {
         return email != null && !email.isEmpty() && password != null && !password.isEmpty();
@@ -71,5 +70,4 @@ public class RegisterController {
     private String getSiteURL(HttpServletRequest request) {
         return request.getHeader("origin");
     }
-
 }

@@ -5,7 +5,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("INSTAGRAM")
+@DiscriminatorValue("INSTAGRAM_USER")
 public class InstagramUser extends User{
     private transient final String administrationRole = "ROLE_INSTAGRAM_USER";
 
