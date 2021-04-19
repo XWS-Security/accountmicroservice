@@ -1,5 +1,8 @@
 package com.example.pki.service.impl;
 
+import Exceptions.BadActivationCodeException;
+import Exceptions.PasswordIsNotValid;
+import Exceptions.PasswordsDoNotMatch;
 import com.example.pki.mail.AccountActivationLinkMailFormatter;
 import com.example.pki.mail.MailService;
 import com.example.pki.model.Authority;
@@ -16,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class RegisterServiceImpl implements RegisterService {
@@ -23,7 +28,8 @@ public class RegisterServiceImpl implements RegisterService {
     private final UserRepository userRepository;
     private final AuthorityService authService;
     private final PasswordEncoder passwordEncoder;
-
+    private static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{10,20}$";
+    private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
     private final MailService<String> mailService;
 
     @Autowired
@@ -38,7 +44,16 @@ public class RegisterServiceImpl implements RegisterService {
     }
 
     @Override
-    public InstagramUser register(RegisterDto dto, String siteURL) throws MessagingException {
+    public InstagramUser register(RegisterDto dto, String siteURL) throws MessagingException, PasswordIsNotValid {
+
+        if (!isPasswordValid(dto.getPassword())) {
+            throw new PasswordIsNotValid();
+        }
+
+        if (!dto.getPassword().equals(dto.getRepeatedPassword())) {
+            throw new PasswordsDoNotMatch();
+        }
+
         InstagramUser user = new InstagramUser();
         List<Authority> auth = authService.findByname(user.getAdministrationRole());
 
@@ -46,22 +61,25 @@ public class RegisterServiceImpl implements RegisterService {
         user.setEmail(dto.getEmail());
         user.setAuthorities(auth);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
+
         String activationCode = RandomString.make(64);
         user.setActivationCode(activationCode);
-        /*if(userExists(user.getEmail())){
+
+        if (userExists(user.getEmail())) {
             throw new RuntimeException();
-        }*/
+        }
+
         user = userRepository.save(user);
-       // sendActivationLink(user, siteURL);
+        sendActivationLink(user, siteURL);
         return user;
     }
 
     @Override
-    public InstagramUser activate(String email, String activationCode) {
+    public InstagramUser activate(String email, String activationCode) throws BadActivationCodeException {
         InstagramUser patient = findByEmail(email);
-        /*if (!patient.getActivationCode().equals(activationCode)) {
+        if (!patient.getActivationCode().equals(activationCode)) {
             throw new BadActivationCodeException();
-        }*/
+        }
         patient.Enable();
         patient.setActivationCode(null);
         patient = this.userRepository.save(patient);
@@ -73,22 +91,18 @@ public class RegisterServiceImpl implements RegisterService {
         User user = userRepository.findByEmail(email);
         if (user == null) {
             return null;
-        }
-        /*if (!user.getClass().equals(Patient.class)) {
-            throw new NotAPatientException();
-        }*/ else {
+        } else {
             return (InstagramUser) user;
         }
     }
 
     @Override
     public boolean userExists(String email) {
-        /*try {
+        try {
             return findByEmail(email) != null;
-        } catch (NotAPatientException e) {
+        } catch (Exception e) {
             return true;
-        }*/
-        return false;
+        }
     }
 
     private void sendActivationLink(InstagramUser instagramUser, String siteUrl) throws MessagingException {
@@ -96,4 +110,8 @@ public class RegisterServiceImpl implements RegisterService {
         mailService.sendMail(instagramUser.getEmail(), verifyURL, new AccountActivationLinkMailFormatter());
     }
 
+    private boolean isPasswordValid(final String password) {
+        Matcher matcher = pattern.matcher(password);
+        return matcher.matches();
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.pki.service;
 
+import Exceptions.BadActivationCodeException;
 import com.example.pki.model.InstagramUser;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.LogInDto;
@@ -9,7 +10,7 @@ import javax.mail.MessagingException;
 
 public interface RegisterService {
 
-    User activate(String email, String activationCode);
+    User activate(String email, String activationCode) throws BadActivationCodeException;
 
     User register(RegisterDto registerDto, String siteURL) throws MessagingException;
 
