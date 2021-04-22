@@ -4,7 +4,6 @@ import com.example.pki.model.dto.LogInDto;
 import com.example.pki.model.dto.UserTokenState;
 import com.example.pki.service.LogInService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
 public class LoginController {
 
-    private LogInService logInService;
+    private final LogInService logInService;
 
     @Autowired
     public LoginController(LogInService logInService) {
@@ -25,8 +24,13 @@ public class LoginController {
 
     @PostMapping("/")
     public ResponseEntity<UserTokenState> createAuthenticationToken(@RequestBody LogInDto authenticationRequest) {
-        UserTokenState state = logInService.logIn(authenticationRequest);
-        return ResponseEntity.ok(state);
+        try{
+            UserTokenState state = logInService.logIn(authenticationRequest);
+            return ResponseEntity.ok(state);
+        } catch (Exception e) {
+            e.printStackTrace();
+            UserTokenState state = logInService.logIn(authenticationRequest);
+            return ResponseEntity.ok(state);
+        }
     }
-
 }

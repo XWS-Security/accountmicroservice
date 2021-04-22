@@ -76,14 +76,14 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Override
     public InstagramUser activate(String email, String activationCode) throws BadActivationCodeException {
-        InstagramUser patient = findByEmail(email);
-        if (!patient.getActivationCode().equals(activationCode)) {
+        InstagramUser user = findByEmail(email);
+        if (!user.getActivationCode().equals(activationCode)) {
             throw new BadActivationCodeException();
         }
-        patient.Enable();
-        patient.setActivationCode(null);
-        patient = this.userRepository.save(patient);
-        return patient;
+        user.Enable();
+        user.setActivationCode(null);
+        user = this.userRepository.save(user);
+        return user;
     }
 
     @Override
