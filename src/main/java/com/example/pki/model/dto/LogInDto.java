@@ -1,8 +1,8 @@
 package com.example.pki.model.dto;
 
-import java.util.Objects;
+import java.io.Serializable;
 
-public class LogInDto {
+public class LogInDto implements Serializable {
 
     private String email;
     private String password;
@@ -39,29 +39,5 @@ public class LogInDto {
 
     public void setOldPassword(String oldPassword) {
         this.oldPassword = oldPassword;
-    }
-
-    @Override
-    public String toString() {
-        return "LogInDto{" +
-                "email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", oldPassword='" + oldPassword + '\'' +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        LogInDto logInDto = (LogInDto) o;
-        return Objects.equals(email, logInDto.email) &&
-                Objects.equals(password, logInDto.password) &&
-                Objects.equals(oldPassword, logInDto.oldPassword);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(email, password, oldPassword);
     }
 }

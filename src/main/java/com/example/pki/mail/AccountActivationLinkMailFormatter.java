@@ -7,11 +7,11 @@ public class AccountActivationLinkMailFormatter implements MailFormatter<String>
                 "<html lang=\"en\">\n" +
                 "    <head>\n" +
                 "        <meta charset=\"UTF-8\">\n" +
-                "        <title>PharmacyManager</title>\n" +
+                "        <title>SecurityApp</title>\n" +
                 "    </head>\n" +
                 "    <body>\n" +
                 "        <h1>\n" +
-                "            ®™PharmacyManager\n" +
+                "            ®™SecurityApp\n" +
                 "        </h1>\n" +
                 "        <hr>\n" +
                 "        <p>\n" +
@@ -26,6 +26,6 @@ public class AccountActivationLinkMailFormatter implements MailFormatter<String>
 
     @Override
     public String getSubject() {
-        return "Welcome to ®™PharmacyManager!";
+        return "Welcome to ®™SecurityApp!";
     }
 }
