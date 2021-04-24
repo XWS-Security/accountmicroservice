@@ -32,14 +32,7 @@ public class LogInServiceImpl implements LogInService {
 
     @Override
     public UserTokenState logIn(LogInDto authenticationRequest) {
-        return getUserTokenState(authenticationRequest);
-    }
 
-    private boolean isValidType(User user) {
-        return true;
-    }
-
-    private UserTokenState getUserTokenState(LogInDto authenticationRequest) {
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(),
                         authenticationRequest.getPassword()));
