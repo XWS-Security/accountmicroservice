@@ -2,21 +2,18 @@ package com.example.pki.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Table(name = "gram_user")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 public abstract class User implements UserDetails {
-
     private transient String administrationRole = "";
 
     @Id
@@ -42,9 +39,17 @@ public abstract class User implements UserDetails {
     @JoinTable(name = "user_authority",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
-    private List<Authority> authorities;
+    private List<Role> roles;
 
     protected User() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getEmail() {
@@ -55,6 +60,7 @@ public abstract class User implements UserDetails {
         this.email = email;
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
@@ -63,6 +69,35 @@ public abstract class User implements UserDetails {
         Timestamp now = new Timestamp(new Date().getTime());
         this.setLastPasswordResetDate(now);
         this.password = password;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Timestamp getLastPasswordResetDate() {
+        return lastPasswordResetDate;
+    }
+
+    public void setLastPasswordResetDate(Timestamp lastPasswordResetDate) {
+        this.lastPasswordResetDate = lastPasswordResetDate;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
+    }
+
+    public void setAdministrationRole(String administrationRole) {
+        this.administrationRole = administrationRole;
     }
 
     public String getAdministrationRole() {
@@ -77,14 +112,6 @@ public abstract class User implements UserDetails {
         this.enabled = false;
     }
 
-    public Timestamp getLastPasswordResetDate() {
-        return lastPasswordResetDate;
-    }
-
-    public void setLastPasswordResetDate(Timestamp lastPasswordResetDate) {
-        this.lastPasswordResetDate = lastPasswordResetDate;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -96,22 +123,17 @@ public abstract class User implements UserDetails {
                 Objects.equals(email, user.email) &&
                 Objects.equals(password, user.password) &&
                 Objects.equals(lastPasswordResetDate, user.lastPasswordResetDate) &&
-                Objects.equals(authorities, user.authorities);
-    }
-
-
-    @Override
-    public boolean isEnabled() {
-        return this.enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+                Objects.equals(roles, user.roles);
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        return getGrantedAuthorities();
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
     }
 
     @JsonIgnore
@@ -132,24 +154,13 @@ public abstract class User implements UserDetails {
         return true;
     }
 
-    public void setAuthorities(List<Authority> authorities) {
-        this.authorities = authorities;
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    public void setAdministrationRole(String administrationRole) {
-        this.administrationRole = administrationRole;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    private List<GrantedAuthority> getGrantedAuthorities() {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        for (Role role : this.getRoles()) {
+            for (Privilege privilege : role.getPrivileges()) {
+                authorities.add(new SimpleGrantedAuthority(privilege.getName()));
+            }
+        }
+        return authorities;
     }
 }
