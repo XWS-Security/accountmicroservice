@@ -5,7 +5,7 @@ import Exceptions.PasswordIsNotValid;
 import Exceptions.PasswordsDoNotMatch;
 import com.example.pki.mail.AccountActivationLinkMailFormatter;
 import com.example.pki.mail.MailService;
-import com.example.pki.model.Authority;
+import com.example.pki.model.Role;
 import com.example.pki.model.InstagramUser;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.RegisterDto;
@@ -55,11 +55,11 @@ public class RegisterServiceImpl implements RegisterService {
         }
 
         InstagramUser user = new InstagramUser();
-        List<Authority> auth = authService.findByname(user.getAdministrationRole());
+        List<Role> auth = authService.findByname(user.getAdministrationRole());
 
         user.setPassword(dto.getPassword());
         user.setEmail(dto.getEmail());
-        user.setAuthorities(auth);
+        user.setRoles(auth);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         String activationCode = RandomString.make(64);

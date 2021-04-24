@@ -1,6 +1,6 @@
 package com.example.pki.service.impl;
 
-import com.example.pki.model.Authority;
+import com.example.pki.model.Role;
 import com.example.pki.repository.AuthorityRepository;
 import com.example.pki.service.AuthorityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,20 +20,18 @@ public class AuthorityServiceImpl implements AuthorityService {
     }
 
     @Override
-    public List<Authority> findById(Long id) {
-        Authority auth = this.authorityRepository.getOne(id);
-        List<Authority> auths = new ArrayList<>();
+    public List<Role> findById(Long id) {
+        Role auth = this.authorityRepository.getOne(id);
+        List<Role> auths = new ArrayList<>();
         auths.add(auth);
         return auths;
     }
 
     @Override
-    public List<Authority> findByname(String name) {
-        Authority auth = this.authorityRepository.findByName(name);
-        List<Authority> auths = new ArrayList<>();
+    public List<Role> findByname(String name) {
+        Role auth = this.authorityRepository.findByName(name);
+        List<Role> auths = new ArrayList<>();
         auths.add(auth);
         return auths;
     }
-
-
 }
