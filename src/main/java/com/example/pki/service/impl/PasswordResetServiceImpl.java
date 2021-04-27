@@ -1,9 +1,6 @@
 package com.example.pki.service.impl;
 
-import Exceptions.BadPasswordResetCodeException;
-import Exceptions.EmailDoesNotExistException;
-import Exceptions.PasswordIsNotValid;
-import Exceptions.PasswordsDoNotMatch;
+import Exceptions.*;
 import com.example.pki.mail.MailService;
 import com.example.pki.mail.PasswordResetMailFormatter;
 import com.example.pki.model.User;
@@ -45,15 +42,24 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     }
 
     @Override
-    public void changePassword(ChangePasswordDto passwordDto) throws BadPasswordResetCodeException, PasswordsDoNotMatch, PasswordIsNotValid {
+    public void changePassword(ChangePasswordDto passwordDto) throws BadPasswordResetCodeException, PasswordsDoNotMatch, PasswordIsNotValid, PasswordResetTriesExceededException {
         User user = userRepository.findByEmail(passwordDto.getEmail());
 
-        if (!passwordDto.getCode().equals(user.getPasswordResetCode())) throw new BadPasswordResetCodeException();
+        if (!passwordDto.getCode().equals(user.getPasswordResetCode())) {
+            user.incrementPasswordResetFailed();
+            if (user.getPasswordResetFailed() >= 3) {
+                user.resetPasswordResetCode();
+                userRepository.save(user);
+                throw new PasswordResetTriesExceededException();
+            }
+            userRepository.save(user);
+            throw new BadPasswordResetCodeException();
+        }
 
         validatePasswords(passwordDto.getNewPassword(), passwordDto.getNewPasswordRepeated());
 
         user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
-        user.setPasswordResetCode(null);
+        user.resetPasswordResetCode();
         userRepository.save(user);
     }
 

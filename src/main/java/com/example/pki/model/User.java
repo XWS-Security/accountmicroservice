@@ -38,6 +38,9 @@ public abstract class User implements UserDetails {
     @Column(name = "password_reset_code", length = 64)
     private String passwordResetCode;
 
+    @Column(name = "password_reset_failed")
+    private int passwordResetFailed = 0;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_authority",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
@@ -97,6 +100,14 @@ public abstract class User implements UserDetails {
 
     public void setPasswordResetCode(String passwordResetCode) {
         this.passwordResetCode = passwordResetCode;
+    }
+
+    public int getPasswordResetFailed() {
+        return passwordResetFailed;
+    }
+
+    public void setPasswordResetFailed(int passwordResetFailed) {
+        this.passwordResetFailed = passwordResetFailed;
     }
 
     public List<Role> getRoles() {
@@ -163,6 +174,15 @@ public abstract class User implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
+    }
+
+    public void incrementPasswordResetFailed() {
+        this.passwordResetFailed++;
+    }
+
+    public void resetPasswordResetCode() {
+        this.passwordResetCode = null;
+        this.passwordResetFailed = 0;
     }
 
     private List<GrantedAuthority> getGrantedAuthorities() {
