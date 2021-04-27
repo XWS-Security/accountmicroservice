@@ -27,13 +27,9 @@ public class RegisterController {
     private final PasswordResetService passwordResetService;
 
     private final static String userExistsAlert = "User with that mail address already exists!";
-    private final static String passwordIsNotValid = "Password must contain one uppercase letter, one special character, and digit! Minimum length is 10 characters";
-    private final static String passwordDoNotMatch = "Passwords must match!";
     private final static String registrationFailedAlert = "Registration failed!";
     private final static String missingBasicUserInfoAlert = "Registration failed! Missing email or password";
-    private final static String userDoesNotExist = "User with entered email does not exist. Please check if the email address is entered correctly.";
     private final static String mailCannotBeSent = "There's been an issue with our mailing service, please try again.";
-    private final static String badActivationCode = "The entered activation code does not match the one we sent.";
 
     @Autowired
     public RegisterController(RegisterService registerService, PasswordResetService passwordResetService) {
@@ -55,10 +51,8 @@ public class RegisterController {
             return new ResponseEntity<>("/emailSent", HttpStatus.OK);
         } catch (BadUserInformationException e) {
             return new ResponseEntity<>(userExistsAlert, HttpStatus.BAD_REQUEST);
-        } catch (PasswordIsNotValid e) {
-            return new ResponseEntity<>(passwordIsNotValid, HttpStatus.BAD_REQUEST);
-        } catch (PasswordsDoNotMatch e) {
-            return new ResponseEntity<>(passwordDoNotMatch, HttpStatus.BAD_REQUEST);
+        } catch (PasswordIsNotValid | PasswordsDoNotMatch e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(registrationFailedAlert, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -82,7 +76,7 @@ public class RegisterController {
             passwordResetService.resetPassword(passwordResetDto.getEmail());
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (EmailDoesNotExistException e) {
-            return new ResponseEntity<>(userDoesNotExist, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (MessagingException e) {
             return new ResponseEntity<>(mailCannotBeSent, HttpStatus.BAD_REQUEST);
         }
@@ -93,12 +87,8 @@ public class RegisterController {
         try {
             passwordResetService.changePassword(changePasswordDto);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (BadPasswordResetCodeException e) {
-            return new ResponseEntity<>(badActivationCode, HttpStatus.BAD_REQUEST);
-        } catch (PasswordsDoNotMatch e) {
-            return new ResponseEntity<>(passwordDoNotMatch, HttpStatus.BAD_REQUEST);
-        } catch (PasswordIsNotValid e) {
-            return new ResponseEntity<>(passwordIsNotValid, HttpStatus.BAD_REQUEST);
+        } catch (BadPasswordResetCodeException | PasswordsDoNotMatch | PasswordIsNotValid | PasswordResetTriesExceededException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
