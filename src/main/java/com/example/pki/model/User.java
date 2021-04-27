@@ -35,6 +35,9 @@ public abstract class User implements UserDetails {
     @Column(name = "last_password_reset_date")
     protected Timestamp lastPasswordResetDate;
 
+    @Column(name = "password_reset_code", length = 64)
+    private String passwordResetCode;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_authority",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
@@ -86,6 +89,14 @@ public abstract class User implements UserDetails {
 
     public void setLastPasswordResetDate(Timestamp lastPasswordResetDate) {
         this.lastPasswordResetDate = lastPasswordResetDate;
+    }
+
+    public String getPasswordResetCode() {
+        return passwordResetCode;
+    }
+
+    public void setPasswordResetCode(String passwordResetCode) {
+        this.passwordResetCode = passwordResetCode;
     }
 
     public List<Role> getRoles() {
