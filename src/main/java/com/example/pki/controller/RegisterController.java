@@ -1,9 +1,6 @@
 package com.example.pki.controller;
 
-import Exceptions.BadActivationCodeException;
-import Exceptions.BadUserInformationException;
-import Exceptions.PasswordIsNotValid;
-import Exceptions.PasswordsDoNotMatch;
+import Exceptions.*;
 import com.example.pki.model.dto.ActivateDto;
 import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.service.RegisterService;
@@ -70,6 +67,8 @@ public class RegisterController {
             return new ResponseEntity<>("/activation/success", HttpStatus.OK);
         } catch (BadActivationCodeException e) {
             return new ResponseEntity<>("/activation/failed", HttpStatus.BAD_REQUEST);
+        } catch (RegistrationTimeExpiredException e){
+            return new ResponseEntity<>("Registration time expired", HttpStatus.BAD_REQUEST);
         }
     }
 
