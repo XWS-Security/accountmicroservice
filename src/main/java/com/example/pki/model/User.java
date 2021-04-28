@@ -22,6 +22,12 @@ public abstract class User implements UserDetails {
     @Column(name = "id", unique = true)
     protected Long id;
 
+    @Column(name = "name", unique = true)
+    protected String name;
+
+    @Column(name = "surname", unique = true)
+    protected String surname;
+
     @Column(name = "email", unique = true)
     protected String email;
 
@@ -56,6 +62,22 @@ public abstract class User implements UserDetails {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 
     public String getEmail() {

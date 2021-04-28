@@ -38,7 +38,6 @@ public class LoginController {
             UserTokenState state = logInService.logIn(authenticationRequest);
             return ResponseEntity.ok(state);
         } catch (Exception e) {
-            e.printStackTrace();
             return new ResponseEntity<UserTokenState>(HttpStatus.BAD_REQUEST);
         }
     }

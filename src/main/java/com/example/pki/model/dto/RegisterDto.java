@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 public class RegisterDto implements Serializable {
 
+    private String name;
+    private String surname;
     private String email;
     private String password;
     private String repeatedPassword;
@@ -12,7 +14,9 @@ public class RegisterDto implements Serializable {
 
     }
 
-    public RegisterDto(String email, String password, String repeatedPassword) {
+    public RegisterDto(String name, String surname, String email, String password, String repeatedPassword) {
+        this.name = name;
+        this.surname = surname;
         this.email = email;
         this.password = password;
         this.repeatedPassword = repeatedPassword;
@@ -40,5 +44,22 @@ public class RegisterDto implements Serializable {
 
     public void setRepeatedPassword(String repeatedPassword) {
         this.repeatedPassword = repeatedPassword;
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 }
