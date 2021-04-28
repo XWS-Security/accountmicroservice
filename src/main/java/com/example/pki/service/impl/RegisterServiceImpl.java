@@ -3,6 +3,7 @@ package com.example.pki.service.impl;
 import Exceptions.BadActivationCodeException;
 import Exceptions.PasswordIsNotValid;
 import Exceptions.PasswordsDoNotMatch;
+import Exceptions.RegistrationTimeExpiredException;
 import com.example.pki.mail.AccountActivationLinkMailFormatter;
 import com.example.pki.mail.MailService;
 import com.example.pki.model.Role;
@@ -21,6 +22,7 @@ import javax.mail.MessagingException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.sql.Timestamp;
 
 @Service
 public class RegisterServiceImpl implements RegisterService {
@@ -61,6 +63,7 @@ public class RegisterServiceImpl implements RegisterService {
         user.setEmail(dto.getEmail());
         user.setRoles(auth);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRegistrationSentDate(new Timestamp(System.currentTimeMillis()));
 
         String activationCode = RandomString.make(64);
         user.setActivationCode(activationCode);
@@ -79,6 +82,9 @@ public class RegisterServiceImpl implements RegisterService {
         InstagramUser user = findByEmail(email);
         if (!user.getActivationCode().equals(activationCode)) {
             throw new BadActivationCodeException();
+        }
+        if(!isRegistrationTimeValid(user.getRegistrationSentDate())) {
+            throw new RegistrationTimeExpiredException();
         }
         user.Enable();
         user.setActivationCode(null);
@@ -113,5 +119,16 @@ public class RegisterServiceImpl implements RegisterService {
     private boolean isPasswordValid(final String password) {
         Matcher matcher = pattern.matcher(password);
         return matcher.matches();
+    }
+
+    private boolean isRegistrationTimeValid(Timestamp timestamp){
+        Timestamp timeNow = new Timestamp(System.currentTimeMillis());
+        long milliseconds = timeNow.getTime() - timestamp.getTime();
+        int seconds = (int) milliseconds / 1000;
+        int minutes = (seconds % 3600) / 60;
+        System.out.println(minutes);
+        System.out.println(timestamp);
+        return minutes < 1;
+
     }
 }
