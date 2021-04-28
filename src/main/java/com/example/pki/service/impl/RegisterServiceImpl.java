@@ -81,9 +81,12 @@ public class RegisterServiceImpl implements RegisterService {
     public InstagramUser activate(String email, String activationCode) throws BadActivationCodeException {
         InstagramUser user = findByEmail(email);
         if (!user.getActivationCode().equals(activationCode)) {
+            userRepository.delete(user);
             throw new BadActivationCodeException();
         }
+
         if(!isRegistrationTimeValid(user.getRegistrationSentDate())) {
+            userRepository.delete(user);
             throw new RegistrationTimeExpiredException();
         }
         user.Enable();
@@ -126,9 +129,6 @@ public class RegisterServiceImpl implements RegisterService {
         long milliseconds = timeNow.getTime() - timestamp.getTime();
         int seconds = (int) milliseconds / 1000;
         int minutes = (seconds % 3600) / 60;
-        System.out.println(minutes);
-        System.out.println(timestamp);
         return minutes < 1;
-
     }
 }

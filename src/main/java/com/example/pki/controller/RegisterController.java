@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -52,8 +49,7 @@ public class RegisterController {
             return new ResponseEntity<>(passwordIsNotValid, HttpStatus.BAD_REQUEST);
         } catch (PasswordsDoNotMatch e) {
             return new ResponseEntity<>(passwordDoNotMatch, HttpStatus.BAD_REQUEST);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(registrationFailedAlert, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -65,10 +61,8 @@ public class RegisterController {
         try {
             this.registerService.activate(email, code);
             return new ResponseEntity<>("/activation/success", HttpStatus.OK);
-        } catch (BadActivationCodeException e) {
+        } catch (BadActivationCodeException | RegistrationTimeExpiredException e) {
             return new ResponseEntity<>("/activation/failed", HttpStatus.BAD_REQUEST);
-        } catch (RegistrationTimeExpiredException e){
-            return new ResponseEntity<>("Registration time expired", HttpStatus.BAD_REQUEST);
         }
     }
 
