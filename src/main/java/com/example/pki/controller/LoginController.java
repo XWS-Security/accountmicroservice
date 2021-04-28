@@ -1,6 +1,6 @@
 package com.example.pki.controller;
 
-import Exceptions.InvalidCharacterException;
+import com.example.pki.exceptions.InvalidCharacterException;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.LogInDto;
 import com.example.pki.model.dto.UserTokenState;

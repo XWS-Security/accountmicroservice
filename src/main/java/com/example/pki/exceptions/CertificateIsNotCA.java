@@ -1,4 +1,4 @@
-package Exceptions;
+package com.example.pki.exceptions;
 
 public class CertificateIsNotCA extends RuntimeException {
 

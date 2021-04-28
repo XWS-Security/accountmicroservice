@@ -1,7 +1,6 @@
 package com.example.pki.controller;
 
-import Exceptions.*;
-import com.example.pki.model.InstagramUser;
+import com.example.pki.exceptions.*;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.*;
 import com.example.pki.service.PasswordResetService;

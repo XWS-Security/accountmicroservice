@@ -1,4 +1,4 @@
-package Exceptions;
+package com.example.pki.exceptions;
 
 public class BadPasswordResetCodeException extends Exception {
     public BadPasswordResetCodeException() {

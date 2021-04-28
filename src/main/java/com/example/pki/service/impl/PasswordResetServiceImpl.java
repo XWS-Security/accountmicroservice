@@ -1,6 +1,6 @@
 package com.example.pki.service.impl;
 
-import Exceptions.*;
+import com.example.pki.exceptions.*;
 import com.example.pki.mail.MailService;
 import com.example.pki.mail.PasswordResetMailFormatter;
 import com.example.pki.model.User;

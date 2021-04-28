@@ -1,6 +1,6 @@
 package com.example.pki.service;
 
-import Exceptions.*;
+import com.example.pki.exceptions.*;
 import com.example.pki.model.dto.ChangePasswordDto;
 import com.example.pki.model.dto.ResetPasswordDto;
 import org.springframework.security.authentication.BadCredentialsException;
