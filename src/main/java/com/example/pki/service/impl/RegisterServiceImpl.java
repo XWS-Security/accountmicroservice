@@ -62,6 +62,8 @@ public class RegisterServiceImpl implements RegisterService {
         user.setPassword(dto.getPassword());
         user.setEmail(dto.getEmail());
         user.setRoles(auth);
+        user.setName(dto.getName());
+        user.setSurname(dto.getSurname());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRegistrationSentDate(new Timestamp(System.currentTimeMillis()));
 
