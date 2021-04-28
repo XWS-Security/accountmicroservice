@@ -6,13 +6,16 @@ import com.example.pki.mail.PasswordResetMailFormatter;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.ChangePasswordDto;
 import com.example.pki.model.dto.ResetPasswordDto;
+import com.example.pki.model.dto.UserTokenState;
 import com.example.pki.repository.UserRepository;
+import com.example.pki.security.TokenUtils;
 import com.example.pki.service.PasswordResetService;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,12 +33,14 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private final PasswordEncoder passwordEncoder;
     private final MailService<String> mailService;
     private final AuthenticationManager authenticationManager;
+    private final TokenUtils tokenUtils;
 
-    public PasswordResetServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, MailService<String> mailService, AuthenticationManager authenticationManager) {
+    public PasswordResetServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, MailService<String> mailService, AuthenticationManager authenticationManager, TokenUtils tokenUtils) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
         this.authenticationManager = authenticationManager;
+        this.tokenUtils = tokenUtils;
     }
 
     @Override
@@ -73,19 +78,18 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     }
 
     @Override
-    public void changePassword(ChangePasswordDto passwordDto, String email) throws PasswordsDoNotMatch, PasswordIsNotValid, BadCredentialsException {
+    public UserTokenState changePassword(ChangePasswordDto passwordDto, String email) throws PasswordsDoNotMatch, PasswordIsNotValid, BadCredentialsException {
         User user = userRepository.findByEmail(email);
-        // TODO: check old password and email
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, passwordDto.getOldPassword()));
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, passwordDto.getOldPassword()));
 
-        // TODO: validate new password
         validatePasswords(passwordDto.getNewPassword(), passwordDto.getNewPasswordRepeated());
 
-        // TODO: change password and save user
         user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
         user.setLastPasswordResetDate(new Timestamp(System.currentTimeMillis()));
         userRepository.save(user);
+
+        // TODO: return new token
+        return authenticateUser(email, passwordDto.getNewPassword());
     }
 
     private void validatePasswords(String password, String passwordRepeated) throws PasswordsDoNotMatch, PasswordIsNotValid {
@@ -96,5 +100,16 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private boolean isPasswordSafe(String password) {
         Matcher matcher = pattern.matcher(password);
         return matcher.matches();
+    }
+
+    private UserTokenState authenticateUser(String email, String password) {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        User user = (User) authentication.getPrincipal();
+        String username = user.getUsername();
+        String userType = user.getClass().getSimpleName();
+        String accessToken = tokenUtils.generateToken(username);
+        int accessExpiresIn = tokenUtils.getExpiredIn();
+        return new UserTokenState(userType, accessToken, accessExpiresIn);
     }
 }
