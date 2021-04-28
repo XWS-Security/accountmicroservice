@@ -2,13 +2,13 @@ package com.example.pki.model.dto;
 
 import java.io.Serializable;
 
-public class PasswordResetDto implements Serializable {
+public class TriggerResetPasswordDto implements Serializable {
     private String email;
 
-    public PasswordResetDto() {
+    public TriggerResetPasswordDto() {
     }
 
-    public PasswordResetDto(String email) {
+    public TriggerResetPasswordDto(String email) {
         this.email = email;
     }
 

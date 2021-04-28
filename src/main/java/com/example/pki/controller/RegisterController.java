@@ -1,10 +1,9 @@
 package com.example.pki.controller;
 
 import Exceptions.*;
-import com.example.pki.model.dto.ActivateDto;
-import com.example.pki.model.dto.ChangePasswordDto;
-import com.example.pki.model.dto.PasswordResetDto;
-import com.example.pki.model.dto.RegisterDto;
+import com.example.pki.model.InstagramUser;
+import com.example.pki.model.User;
+import com.example.pki.model.dto.*;
 import com.example.pki.service.PasswordResetService;
 import com.example.pki.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -75,10 +76,10 @@ public class RegisterController {
         }
     }
 
-    @PostMapping("/resetPassword")
-    public ResponseEntity<String> resetPassword(@RequestBody PasswordResetDto passwordResetDto) {
+    @PostMapping("/password/triggerReset")
+    public ResponseEntity<String> triggerResetPassword(@RequestBody TriggerResetPasswordDto triggerResetPasswordDto) {
         try {
-            passwordResetService.resetPassword(passwordResetDto.getEmail());
+            passwordResetService.sendPasswordResetCode(triggerResetPasswordDto.getEmail());
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (EmailDoesNotExistException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -87,13 +88,27 @@ public class RegisterController {
         }
     }
 
-    @PostMapping("/changePassword")
-    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
+    @PostMapping("/password/reset")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
         try {
-            passwordResetService.changePassword(changePasswordDto);
+            passwordResetService.resetPassword(resetPasswordDto);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (BadPasswordResetCodeException | PasswordsDoNotMatch | PasswordIsNotValid | PasswordResetTriesExceededException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/password/change")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
+        try {
+            passwordResetService.changePassword(changePasswordDto, getSignedInUser().getEmail());
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (PasswordsDoNotMatch | PasswordIsNotValid e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>("Bad credentials.", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -103,5 +118,9 @@ public class RegisterController {
 
     private boolean validUserInfo(String email, String password) {
         return email != null && !email.isEmpty() && password != null && !password.isEmpty();
+    }
+
+    private User getSignedInUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
