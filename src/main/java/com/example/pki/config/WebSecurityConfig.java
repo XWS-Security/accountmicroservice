@@ -55,8 +55,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/register/**").permitAll()
                 .antMatchers("/login/**").permitAll()
-                .antMatchers("/test/**").hasAuthority("TEST")
-                .antMatchers("/certificate/**").hasAuthority("CERTIFICATE")
+                .antMatchers("/test/").hasAuthority("TEST")
+                .antMatchers("/certificate/").hasAuthority("CERTIFICATE")
                 .anyRequest().authenticated().and()
                 .cors().and()
                 .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),
