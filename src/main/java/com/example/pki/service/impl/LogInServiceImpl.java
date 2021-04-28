@@ -1,5 +1,6 @@
 package com.example.pki.service.impl;
 
+import Exceptions.InvalidCharacterException;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.LogInDto;
 import com.example.pki.model.dto.UserTokenState;
@@ -32,6 +33,11 @@ public class LogInServiceImpl implements LogInService {
 
     @Override
     public UserTokenState logIn(LogInDto authenticationRequest) {
+
+        if (authenticationRequest.getEmail().contains("<") || authenticationRequest.getEmail().contains(">") ||
+                authenticationRequest.getPassword().contains("<") || authenticationRequest.getPassword().contains(">")) {
+            throw new InvalidCharacterException();
+        }
 
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(),

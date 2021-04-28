@@ -1,5 +1,6 @@
 package com.example.pki.controller;
 
+import Exceptions.InvalidCharacterException;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.LogInDto;
 import com.example.pki.model.dto.UserTokenState;
@@ -37,6 +38,8 @@ public class LoginController {
         try {
             UserTokenState state = logInService.logIn(authenticationRequest);
             return ResponseEntity.ok(state);
+        } catch (InvalidCharacterException e) {
+            return new ResponseEntity<UserTokenState>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<UserTokenState>(HttpStatus.BAD_REQUEST);
         }

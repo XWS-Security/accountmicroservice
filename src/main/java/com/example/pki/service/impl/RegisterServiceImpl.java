@@ -1,13 +1,10 @@
 package com.example.pki.service.impl;
 
-import Exceptions.BadActivationCodeException;
-import Exceptions.PasswordIsNotValid;
-import Exceptions.PasswordsDoNotMatch;
-import Exceptions.RegistrationTimeExpiredException;
+import Exceptions.*;
 import com.example.pki.mail.AccountActivationLinkMailFormatter;
 import com.example.pki.mail.MailService;
-import com.example.pki.model.Role;
 import com.example.pki.model.InstagramUser;
+import com.example.pki.model.Role;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.repository.UserRepository;
@@ -19,10 +16,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.sql.Timestamp;
 
 @Service
 public class RegisterServiceImpl implements RegisterService {
@@ -30,7 +27,7 @@ public class RegisterServiceImpl implements RegisterService {
     private final UserRepository userRepository;
     private final AuthorityService authService;
     private final PasswordEncoder passwordEncoder;
-    private static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{10,20}$";
+    private static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$";
     private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
     private final MailService<String> mailService;
 
@@ -58,6 +55,11 @@ public class RegisterServiceImpl implements RegisterService {
 
         InstagramUser user = new InstagramUser();
         List<Role> auth = authService.findByname(user.getAdministrationRole());
+
+        if (dto.getName().contains("<") || dto.getName().contains(">") || dto.getSurname().contains("<") || dto.getSurname().contains(">")
+                || dto.getEmail().contains("<") || dto.getEmail().contains(">")) {
+            throw new InvalidCharacterException();
+        }
 
         user.setPassword(dto.getPassword());
         user.setEmail(dto.getEmail());
@@ -87,7 +89,7 @@ public class RegisterServiceImpl implements RegisterService {
             throw new BadActivationCodeException();
         }
 
-        if(!isRegistrationTimeValid(user.getRegistrationSentDate())) {
+        if (!isRegistrationTimeValid(user.getRegistrationSentDate())) {
             userRepository.delete(user);
             throw new RegistrationTimeExpiredException();
         }
@@ -122,11 +124,14 @@ public class RegisterServiceImpl implements RegisterService {
     }
 
     private boolean isPasswordValid(final String password) {
+        if (password.contains(">") || password.contains("<")) {
+            return false;
+        }
         Matcher matcher = pattern.matcher(password);
         return matcher.matches();
     }
 
-    private boolean isRegistrationTimeValid(Timestamp timestamp){
+    private boolean isRegistrationTimeValid(Timestamp timestamp) {
         Timestamp timeNow = new Timestamp(System.currentTimeMillis());
         long milliseconds = timeNow.getTime() - timestamp.getTime();
         int seconds = (int) milliseconds / 1000;
