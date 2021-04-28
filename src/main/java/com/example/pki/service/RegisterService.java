@@ -1,9 +1,8 @@
 package com.example.pki.service;
 
-import Exceptions.BadActivationCodeException;
+import com.example.pki.exceptions.BadActivationCodeException;
 import com.example.pki.model.InstagramUser;
 import com.example.pki.model.User;
-import com.example.pki.model.dto.LogInDto;
 import com.example.pki.model.dto.RegisterDto;
 
 import javax.mail.MessagingException;

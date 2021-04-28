@@ -1,8 +1,8 @@
 package com.example.pki.controller;
 
-import Exceptions.CertificateAlreadyExists;
-import Exceptions.CertificateIsNotCA;
-import Exceptions.CertificateIsNotValid;
+import com.example.pki.exceptions.CertificateAlreadyExists;
+import com.example.pki.exceptions.CertificateIsNotCA;
+import com.example.pki.exceptions.CertificateIsNotValid;
 import com.example.pki.model.dto.CertificateDto;
 import com.example.pki.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
