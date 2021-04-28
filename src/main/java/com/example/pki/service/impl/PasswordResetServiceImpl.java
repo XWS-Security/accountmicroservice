@@ -5,13 +5,19 @@ import com.example.pki.mail.MailService;
 import com.example.pki.mail.PasswordResetMailFormatter;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.ChangePasswordDto;
+import com.example.pki.model.dto.ResetPasswordDto;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.service.PasswordResetService;
 import net.bytebuddy.utility.RandomString;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
+import java.sql.Timestamp;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,15 +29,17 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailService<String> mailService;
+    private final AuthenticationManager authenticationManager;
 
-    public PasswordResetServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, MailService<String> mailService) {
+    public PasswordResetServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, MailService<String> mailService, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
+        this.authenticationManager = authenticationManager;
     }
 
     @Override
-    public void resetPassword(String email) throws EmailDoesNotExistException, MessagingException {
+    public void sendPasswordResetCode(String email) throws EmailDoesNotExistException, MessagingException {
         User user = userRepository.findByEmail(email);
         if (user == null) throw new EmailDoesNotExistException();
 
@@ -42,7 +50,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     }
 
     @Override
-    public void changePassword(ChangePasswordDto passwordDto) throws BadPasswordResetCodeException, PasswordsDoNotMatch, PasswordIsNotValid, PasswordResetTriesExceededException {
+    public void resetPassword(ResetPasswordDto passwordDto) throws BadPasswordResetCodeException, PasswordsDoNotMatch, PasswordIsNotValid, PasswordResetTriesExceededException {
         User user = userRepository.findByEmail(passwordDto.getEmail());
 
         if (!passwordDto.getCode().equals(user.getPasswordResetCode())) {
@@ -60,6 +68,23 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
         user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
         user.resetPasswordResetCode();
+        user.setLastPasswordResetDate(new Timestamp(System.currentTimeMillis()));
+        userRepository.save(user);
+    }
+
+    @Override
+    public void changePassword(ChangePasswordDto passwordDto, String email) throws PasswordsDoNotMatch, PasswordIsNotValid, BadCredentialsException {
+        User user = userRepository.findByEmail(email);
+        // TODO: check old password and email
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, passwordDto.getOldPassword()));
+
+        // TODO: validate new password
+        validatePasswords(passwordDto.getNewPassword(), passwordDto.getNewPasswordRepeated());
+
+        // TODO: change password and save user
+        user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
+        user.setLastPasswordResetDate(new Timestamp(System.currentTimeMillis()));
         userRepository.save(user);
     }
 

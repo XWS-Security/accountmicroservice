@@ -20,15 +20,11 @@ public class LogInServiceImpl implements LogInService {
 
     private final TokenUtils tokenUtils;
     private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public LogInServiceImpl(TokenUtils tokenUtils, AuthenticationManager authenticationManager, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public LogInServiceImpl(TokenUtils tokenUtils, AuthenticationManager authenticationManager) {
         this.tokenUtils = tokenUtils;
         this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override

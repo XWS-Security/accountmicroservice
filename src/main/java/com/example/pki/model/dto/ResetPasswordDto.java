@@ -2,18 +2,28 @@ package com.example.pki.model.dto;
 
 import java.io.Serializable;
 
-public class ChangePasswordDto implements Serializable {
+public class ResetPasswordDto implements Serializable {
+    private String email;
     private String newPassword;
     private String newPasswordRepeated;
-    private String oldPassword;
+    private String code;
 
-    public ChangePasswordDto() {
+    public ResetPasswordDto() {
     }
 
-    public ChangePasswordDto(String newPassword, String newPasswordRepeated, String oldPassword) {
+    public ResetPasswordDto(String email, String newPassword, String newPasswordRepeated, String code) {
+        this.email = email;
         this.newPassword = newPassword;
         this.newPasswordRepeated = newPasswordRepeated;
-        this.oldPassword = oldPassword;
+        this.code = code;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getNewPassword() {
@@ -32,11 +42,11 @@ public class ChangePasswordDto implements Serializable {
         this.newPasswordRepeated = newPasswordRepeated;
     }
 
-    public String getOldPassword() {
-        return oldPassword;
+    public String getCode() {
+        return code;
     }
 
-    public void setOldPassword(String oldPassword) {
-        this.oldPassword = oldPassword;
+    public void setCode(String code) {
+        this.code = code;
     }
 }
