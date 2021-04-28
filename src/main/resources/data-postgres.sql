@@ -12,4 +12,4 @@ INSERT INTO ROLES_PRIVILEGES (role_id, privilege_id) VALUES (1, 1);
 INSERT INTO ROLES_PRIVILEGES (role_id, privilege_id) VALUES (2, 2);
 
 INSERT INTO ROLES_PRIVILEGES (role_id, privilege_id) VALUES (2, 2);
-INSERT INTO gram_user (id, user_type , name, surname, email, password, last_password_reset_date, enabled) VALUES (1, 'ADMINISTRATOR', 'Admin', 'Admin', 'pharmacyisa6+admin@gmail.com', '$2a$04$Vbug2lwwJGrvUXTj6z7ff.97IzVBkrJ1XfApfGNl.Z695zqcnPYra', '2017-10-01 21:58:58.508-07', true);
+INSERT INTO gram_user (id, user_type , name, surname, email, password, last_password_reset_date, enabled, password_reset_failed) VALUES (1, 'ADMINISTRATOR', 'Admin', 'Admin', 'pharmacyisa6+admin@gmail.com', '$2a$04$Vbug2lwwJGrvUXTj6z7ff.97IzVBkrJ1XfApfGNl.Z695zqcnPYra', '2017-10-01 21:58:58.508-07', true, 0);
