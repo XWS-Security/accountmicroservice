@@ -3,6 +3,7 @@ package com.example.pki.service;
 import com.example.pki.exceptions.*;
 import com.example.pki.model.dto.ChangePasswordDto;
 import com.example.pki.model.dto.ResetPasswordDto;
+import com.example.pki.model.dto.UserTokenState;
 import org.springframework.security.authentication.BadCredentialsException;
 
 import javax.mail.MessagingException;
@@ -12,5 +13,5 @@ public interface PasswordResetService {
 
     void resetPassword(ResetPasswordDto passwordDto) throws BadPasswordResetCodeException, PasswordResetTriesExceededException;
 
-    void changePassword(ChangePasswordDto passwordDto, String email) throws PasswordsDoNotMatch, PasswordIsNotValid, BadCredentialsException;
+    UserTokenState changePassword(ChangePasswordDto passwordDto, String email) throws PasswordsDoNotMatch, PasswordIsNotValid, BadCredentialsException;
 }

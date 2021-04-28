@@ -98,14 +98,10 @@ public class RegisterController {
     }
 
     @PostMapping("/password/change")
-    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
+    public ResponseEntity<UserTokenState> changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
         try {
-            passwordResetService.changePassword(changePasswordDto, getSignedInUser().getEmail());
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (PasswordsDoNotMatch | PasswordIsNotValid e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (BadCredentialsException e) {
-            return new ResponseEntity<>("Bad credentials.", HttpStatus.BAD_REQUEST);
+            UserTokenState state = passwordResetService.changePassword(changePasswordDto, getSignedInUser().getEmail());
+            return new ResponseEntity<>(state, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
