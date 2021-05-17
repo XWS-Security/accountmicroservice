@@ -1,11 +1,13 @@
-FROM maven AS appWebServerBuild
+FROM maven AS appServerBuild
 ARG STAGE=dev
-WORKDIR /usr/src/pki
-COPY . .
-RUN mvn package -P${STAGE} -DskipTests
-
-FROM openjdk AS appWebServerRuntime
+ARG APPLLICATION_REPOSITORY=Security-Backend
 WORKDIR /app
-COPY --from=appWebServerBuild /usr/src/pki/target/pki-0.0.1-SNAPSHOT.jar ./
+RUN curl -L https://github.com/XWS-Security/Security-Backend/archive/refs/heads/develop.tar.gz | tar -xz && \
+    cd Security-Backend-develop && \
+    mvn package -P${STAGE} -DskipTests
+    
+FROM openjdk AS appWebServerRuntime
+COPY --from=appServerBuild app/Security-Backend-develop/target/pki-0.0.1-SNAPSHOT.jar ./
 EXPOSE 8080
 CMD java -jar pki-0.0.1-SNAPSHOT.jar
+    
