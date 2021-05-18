@@ -1,5 +1,7 @@
 version: "3.8"
+
 services:
+
   pki:
     build:
       context: ./
@@ -12,8 +14,6 @@ services:
     restart: on-failure
     networks:
       - pki-network
-    ports:
-      - 8080:8080
     environment:
       DATABASE_USERNAME: ${DATABASE_USERNAME}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
@@ -22,17 +22,16 @@ services:
     depends_on: 
       - database
       
-  security-front:
-    build:
-      context: front/Security-front
-      dockerfile: Dockerfile
+  gateway:
     image: lukadoric/security-front
-    container_name: pki-container-front
-    restart: on-failure
+    ports:
+      - 8080:8080
     networks:
       - pki-network
-    ports:
-      - 8081:80
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
     
   database:
     image: postgres:${POSTGRES_VERSION-13}
