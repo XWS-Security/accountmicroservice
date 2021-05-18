@@ -68,11 +68,16 @@ public class RegisterServiceImpl implements RegisterService {
         user.setSurname(dto.getSurname());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRegistrationSentDate(new Timestamp(System.currentTimeMillis()));
+        user.setUsername(dto.getUsername());
+        user.setGender(dto.getGender());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setDateOfBirth(dto.getDateOfBirth());
+        user.setAbout(dto.getAbout());
 
         String activationCode = RandomString.make(64);
         user.setActivationCode(activationCode);
 
-        if (userExists(user.getEmail())) {
+        if (userExists(user.getEmail(), user.getUsername())) {
             throw new RuntimeException();
         }
 
@@ -110,9 +115,19 @@ public class RegisterServiceImpl implements RegisterService {
     }
 
     @Override
-    public boolean userExists(String email) {
+    public InstagramUser findByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return null;
+        } else {
+            return (InstagramUser) user;
+        }
+    }
+
+    @Override
+    public boolean userExists(String email, String username) {
         try {
-            return findByEmail(email) != null;
+            return findByEmail(email) != null || findByUsername(username) !=null;
         } catch (Exception e) {
             return true;
         }
