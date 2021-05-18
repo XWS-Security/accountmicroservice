@@ -1,13 +1,15 @@
-FROM node:lts-alpine as build-stage
-ARG APPLLICATION_REPOSITORY=Security-front
-WORKDIR /app
+FROM node:lts-alpine as frontBuild
+ARG APPLLICATION_REPOSITORY=XWS-Security-front
+WORKDIR /src
 RUN apk --update --no-cache add curl tar && \
-    curl -L https://github.com/XWS-Security/Security-front/archive/refs/heads/develop.tar.gz | tar -xz && \
-    cd ${APPLLICATION_REPOSITORY}* && \
+    curl -L https://github.com/XWS-Security/XWS-Security-front/archive/refs/heads/develop.tar.gz | tar -xz && \
+    mv $(ls -d */|head -n 1) app && \
+    cd app && \
     npm install && \
-    npm run build
-    
-FROM nginx:stable-alpine as production-stage
-COPY --from=build-stage app/Security-front-develop/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+    npm run build && \
+    cd dist
+
+FROM nginx:1.19.8-alpine as gatewayWithFront
+COPY --from=frontBuild src/app/dist /usr/share/nginx/html/app
+COPY ./config/nginx.conf /etc/nginx/nginx.conf
+COPY ./config/api_gateway.conf /etc/nginx/api_gateway.conf
