@@ -22,10 +22,10 @@ public abstract class User implements UserDetails {
     @Column(name = "id", unique = true)
     protected Long id;
 
-    @Column(name = "name", unique = true)
+    @Column(name = "name")
     protected String name;
 
-    @Column(name = "surname", unique = true)
+    @Column(name = "surname")
     protected String surname;
 
     @Column(name = "email", unique = true)
@@ -47,6 +47,9 @@ public abstract class User implements UserDetails {
     @Column(name = "password_reset_failed")
     private int passwordResetFailed = 0;
 
+    @Column(name = "username", unique = true)
+    private String username;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_authority",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
@@ -54,6 +57,10 @@ public abstract class User implements UserDetails {
     private List<Role> roles;
 
     protected User() {
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public Long getId() {

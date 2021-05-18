@@ -13,7 +13,9 @@ public interface RegisterService {
 
     User register(RegisterDto registerDto, String siteURL) throws MessagingException;
 
-    boolean userExists(String email);
-
     InstagramUser findByEmail(String email);
+
+    InstagramUser findByUsername(String username);
+
+    boolean userExists(String email, String username);
 }

@@ -29,7 +29,7 @@ public class RegisterController {
     @Qualifier("passwordResetServiceImpl")
     private final PasswordResetService passwordResetService;
 
-    private final static String userExistsAlert = "User with that mail address already exists!";
+    private final static String userExistsAlert = "User with that mail address or username already exists!";
     private final static String registrationFailedAlert = "Registration failed!";
     private final static String missingBasicUserInfoAlert = "Registration failed! Missing email or password";
     private final static String mailCannotBeSent = "There's been an issue with our mailing service, please try again.";
@@ -45,7 +45,7 @@ public class RegisterController {
         if (!validUserInfo(dto.getEmail(), dto.getPassword())) {
             return new ResponseEntity<>(missingBasicUserInfoAlert, HttpStatus.BAD_REQUEST);
         }
-        if (this.registerService.userExists(dto.getEmail())) {
+        if (this.registerService.userExists(dto.getEmail(), dto.getUsername())) {
             return new ResponseEntity<>(userExistsAlert, HttpStatus.BAD_REQUEST);
         }
 
