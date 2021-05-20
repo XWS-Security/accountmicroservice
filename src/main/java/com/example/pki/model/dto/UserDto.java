@@ -1,11 +1,12 @@
 package com.example.pki.model.dto;
 
+import com.example.pki.model.NistagramUser;
 import com.example.pki.model.enums.Gender;
 
 import java.io.Serializable;
 import java.util.Date;
 
-public class RegisterDto implements Serializable {
+public class UserDto implements Serializable {
 
     private String username;
     private String name;
@@ -18,12 +19,12 @@ public class RegisterDto implements Serializable {
     private Date dateOfBirth;
     private String about;
 
-    public RegisterDto() {
+    public UserDto() {
 
     }
 
-    public RegisterDto(String name, String surname, String email, String password, String repeatedPassword, String username,
-    Gender gender, Date dateOfBirth, String phoneNumber, String about) {
+    public UserDto(String name, String surname, String email, String password, String repeatedPassword, String username,
+                   Gender gender, Date dateOfBirth, String phoneNumber, String about) {
         this.username = username;
         this.name = name;
         this.surname = surname;
@@ -34,6 +35,23 @@ public class RegisterDto implements Serializable {
         this.dateOfBirth = dateOfBirth;
         this.phoneNumber = phoneNumber;
         this.about = about;
+    }
+
+    public UserDto(String name, String surname, String email, String username,
+                   Gender gender, Date dateOfBirth, String phoneNumber, String about) {
+        this.username = username;
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
+        this.phoneNumber = phoneNumber;
+        this.about = about;
+    }
+
+    public static UserDto convertUserToDto(NistagramUser user) {
+        return new UserDto(user.getName(), user.getSurname(), user.getEmail(), user.getNistagramUsername(),
+                user.getGender(), user.getDateOfBirth(), user.getPhoneNumber(), user.getAbout());
     }
 
     public Date getDateOfBirth() {

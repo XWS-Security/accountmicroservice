@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,7 +40,7 @@ public class RegisterController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<String> registerUser(HttpServletRequest request, @RequestBody RegisterDto dto) {
+    public ResponseEntity<String> registerUser(HttpServletRequest request, @RequestBody UserDto dto) {
         if (!validUserInfo(dto.getEmail(), dto.getPassword())) {
             return new ResponseEntity<>(missingBasicUserInfoAlert, HttpStatus.BAD_REQUEST);
         }

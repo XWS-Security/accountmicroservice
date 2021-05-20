@@ -6,5 +6,4 @@ import com.example.pki.model.dto.UserTokenState;
 public interface LogInService {
 
     UserTokenState logIn(LogInDto authenticationRequest);
-
 }
