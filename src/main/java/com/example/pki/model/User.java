@@ -47,8 +47,8 @@ public abstract class User implements UserDetails {
     @Column(name = "password_reset_failed")
     private int passwordResetFailed = 0;
 
-    @Column(name = "username", unique = true)
-    private String username;
+    @Column(name = "nistagramUsername", unique = true)
+    private String nistagramUsername;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_authority",
@@ -59,8 +59,12 @@ public abstract class User implements UserDetails {
     protected User() {
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public String getNistagramUsername() {
+        return nistagramUsername;
+    }
+
+    public void setNistagramUsername(String nistagramUsername) {
+        this.nistagramUsername = nistagramUsername;
     }
 
     public Long getId() {

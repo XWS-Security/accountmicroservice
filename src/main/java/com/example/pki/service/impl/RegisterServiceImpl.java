@@ -3,10 +3,10 @@ package com.example.pki.service.impl;
 import com.example.pki.exceptions.*;
 import com.example.pki.mail.AccountActivationLinkMailFormatter;
 import com.example.pki.mail.MailService;
-import com.example.pki.model.InstagramUser;
+import com.example.pki.model.NistagramUser;
 import com.example.pki.model.Role;
 import com.example.pki.model.User;
-import com.example.pki.model.dto.RegisterDto;
+import com.example.pki.model.dto.UserDto;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.service.AuthorityService;
 import com.example.pki.service.RegisterService;
@@ -43,7 +43,7 @@ public class RegisterServiceImpl implements RegisterService {
     }
 
     @Override
-    public InstagramUser register(RegisterDto dto, String siteURL) throws MessagingException, PasswordIsNotValid {
+    public NistagramUser register(UserDto dto, String siteURL) throws MessagingException, PasswordIsNotValid {
 
         if (!isPasswordValid(dto.getPassword())) {
             throw new PasswordIsNotValid();
@@ -53,7 +53,7 @@ public class RegisterServiceImpl implements RegisterService {
             throw new PasswordsDoNotMatch();
         }
 
-        InstagramUser user = new InstagramUser();
+        NistagramUser user = new NistagramUser();
         List<Role> auth = authService.findByname(user.getAdministrationRole());
 
         if (dto.getName().contains("<") || dto.getName().contains(">") || dto.getSurname().contains("<") || dto.getSurname().contains(">")
@@ -68,7 +68,7 @@ public class RegisterServiceImpl implements RegisterService {
         user.setSurname(dto.getSurname());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRegistrationSentDate(new Timestamp(System.currentTimeMillis()));
-        user.setUsername(dto.getUsername());
+        user.setNistagramUsername(dto.getUsername());
         user.setGender(dto.getGender());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setDateOfBirth(dto.getDateOfBirth());
@@ -87,8 +87,8 @@ public class RegisterServiceImpl implements RegisterService {
     }
 
     @Override
-    public InstagramUser activate(String email, String activationCode) throws BadActivationCodeException {
-        InstagramUser user = findByEmail(email);
+    public NistagramUser activate(String email, String activationCode) throws BadActivationCodeException {
+        NistagramUser user = findByEmail(email);
         if (!user.getActivationCode().equals(activationCode)) {
             userRepository.delete(user);
             throw new BadActivationCodeException();
@@ -105,37 +105,37 @@ public class RegisterServiceImpl implements RegisterService {
     }
 
     @Override
-    public InstagramUser findByEmail(String email) {
+    public NistagramUser findByEmail(String email) {
         User user = userRepository.findByEmail(email);
         if (user == null) {
             return null;
         } else {
-            return (InstagramUser) user;
+            return (NistagramUser) user;
         }
     }
 
     @Override
-    public InstagramUser findByUsername(String username) {
-        User user = userRepository.findByUsername(username);
+    public NistagramUser findByUsername(String username) {
+        User user = userRepository.findByNistagramUsername(username);
         if (user == null) {
             return null;
         } else {
-            return (InstagramUser) user;
+            return (NistagramUser) user;
         }
     }
 
     @Override
     public boolean userExists(String email, String username) {
         try {
-            return findByEmail(email) != null || findByUsername(username) !=null;
+            return findByEmail(email) != null || findByUsername(username) != null;
         } catch (Exception e) {
             return true;
         }
     }
 
-    private void sendActivationLink(InstagramUser instagramUser, String siteUrl) throws MessagingException {
-        String verifyURL = siteUrl + "/activation?code=" + instagramUser.getActivationCode() + "&email=" + instagramUser.getEmail();
-        mailService.sendMail(instagramUser.getEmail(), verifyURL, new AccountActivationLinkMailFormatter());
+    private void sendActivationLink(NistagramUser nistagramUser, String siteUrl) throws MessagingException {
+        String verifyURL = siteUrl + "/activation?code=" + nistagramUser.getActivationCode() + "&email=" + nistagramUser.getEmail();
+        mailService.sendMail(nistagramUser.getEmail(), verifyURL, new AccountActivationLinkMailFormatter());
     }
 
     private boolean isPasswordValid(final String password) {

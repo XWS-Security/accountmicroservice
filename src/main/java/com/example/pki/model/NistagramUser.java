@@ -10,7 +10,7 @@ import java.util.Date;
 
 @Entity
 @DiscriminatorValue("INSTAGRAM_USER")
-public class InstagramUser extends User {
+public class NistagramUser extends User {
     private transient final String administrationRole = "ROLE_INSTAGRAM_USER";
 
     @Column(name = "mail_activation_code", length = 64)
