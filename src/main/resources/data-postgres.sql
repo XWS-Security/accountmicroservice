@@ -12,3 +12,23 @@ INSERT INTO ROLES_PRIVILEGES (role_id, privilege_id) VALUES (1, 1);
 INSERT INTO ROLES_PRIVILEGES (role_id, privilege_id) VALUES (2, 2);
 
 INSERT INTO gram_user (id, user_type , name, surname, email, password, last_password_reset_date, enabled, password_reset_failed) VALUES (1, 'ADMINISTRATOR', 'Admin', 'Admin', 'pharmacyisa6+admin@gmail.com', '$2a$04$Vbug2lwwJGrvUXTj6z7ff.97IzVBkrJ1XfApfGNl.Z695zqcnPYra', '2017-10-01 21:58:58.508-07', true, 0);
+
+INSERT INTO gram_user (id, user_type , name, surname, email, password, last_password_reset_date, enabled, password_reset_failed, nistagram_username, about, date_of_birth, geneder, phone_number, registration_sent_date) VALUES (2, 'INSTAGRAM_USER', 'Luka', 'Doric', 'pharmacyisa6+luka@gmail.com', '$2a$04$Vbug2lwwJGrvUXTj6z7ff.97IzVBkrJ1XfApfGNl.Z695zqcnPYra', '2017-10-01 21:58:58.508-07', true, 0,
+ 'lule', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry''s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.', '2021-05-12 02:00:00', 0, '123', '2021-05-21 15:39:47.739');
+ INSERT INTO gram_user (id, user_type , name, surname, email, password, last_password_reset_date, enabled, password_reset_failed, nistagram_username, about) VALUES (3, 'INSTAGRAM_USER', 'Vlado', 'Budjen', 'pharmacyisa6+vlada@gmail.com', '$2a$04$Vbug2lwwJGrvUXTj6z7ff.97IzVBkrJ1XfApfGNl.Z695zqcnPYra', '2017-10-01 21:58:58.508-07', true, 0,
+ 'vlado', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry''s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.');
+ INSERT INTO gram_user (id, user_type , name, surname, email, password, last_password_reset_date, enabled, password_reset_failed, nistagram_username, about) VALUES (4, 'INSTAGRAM_USER', 'Makro', 'Weedovic', 'pharmacyisa6+vidoje@gmail.com', '$2a$04$Vbug2lwwJGrvUXTj6z7ff.97IzVBkrJ1XfApfGNl.Z695zqcnPYra', '2017-10-01 21:58:58.508-07', true, 0,
+ 'vidoje', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry''s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.');
+ INSERT INTO gram_user (id, user_type , name, surname, email, password, last_password_reset_date, enabled, password_reset_failed, nistagram_username, about) VALUES (5, 'INSTAGRAM_USER', 'Milica', 'Siriski', 'pharmacyisa6+milica@gmail.com', '$2a$04$Vbug2lwwJGrvUXTj6z7ff.97IzVBkrJ1XfApfGNl.Z695zqcnPYra', '2017-10-01 21:58:58.508-07', true, 0,
+ 'milica', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry''s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.');
+  INSERT INTO gram_user (id, user_type , name, surname, email, password, last_password_reset_date, enabled, password_reset_failed, nistagram_username, about) VALUES (6, 'INSTAGRAM_USER', 'Dusan', 'Damnjanovic', 'pharmacyisa6+duja@gmail.com', '$2a$04$Vbug2lwwJGrvUXTj6z7ff.97IzVBkrJ1XfApfGNl.Z695zqcnPYra', '2017-10-01 21:58:58.508-07', true, 0,
+ 'duja', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry''s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.');
+  INSERT INTO gram_user (id, user_type , name, surname, email, password, last_password_reset_date, enabled, password_reset_failed, nistagram_username, about) VALUES (7, 'INSTAGRAM_USER', 'Kobra', 'Kobra', 'pharmacyisa6+kobra@gmail.com', '$2a$04$Vbug2lwwJGrvUXTj6z7ff.97IzVBkrJ1XfApfGNl.Z695zqcnPYra', '2017-10-01 21:58:58.508-07', true, 0,
+ 'kobra', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry''s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.');
+
+INSERT INTO user_authority(user_id, authority_id) VALUES (2, 2);
+INSERT INTO user_authority(user_id, authority_id) VALUES (3, 2);
+INSERT INTO user_authority(user_id, authority_id) VALUES (4, 2);
+INSERT INTO user_authority(user_id, authority_id) VALUES (5, 2);
+INSERT INTO user_authority(user_id, authority_id) VALUES (6, 2);
+INSERT INTO user_authority(user_id, authority_id) VALUES (7, 2);

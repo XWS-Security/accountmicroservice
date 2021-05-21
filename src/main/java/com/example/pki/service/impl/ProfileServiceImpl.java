@@ -4,6 +4,7 @@ import com.example.pki.exceptions.BadUserInformationException;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.UserDto;
+import com.example.pki.repository.NistagramUserRepository;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.service.ProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,16 +13,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ProfileServiceImpl implements ProfileService {
 
     private final UserRepository userRepository;
+    private final NistagramUserRepository nistagramUserRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public ProfileServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public ProfileServiceImpl(UserRepository userRepository, NistagramUserRepository nistagramUserRepository,
+                              PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.nistagramUserRepository = nistagramUserRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -49,6 +54,30 @@ public class ProfileServiceImpl implements ProfileService {
 
         userRepository.save(currentlyLoggedUser);
     }
+
+    @Override
+    public List<UserDto> findAllNistagramUsers() {
+        ArrayList<UserDto> usersDto = new ArrayList<>();
+        ArrayList<NistagramUser> users = (ArrayList<NistagramUser>) nistagramUserRepository.findAll();
+        users.forEach(user -> {
+            usersDto.add(UserDto.convertUserToDto(user));
+        });
+        return usersDto;
+    }
+
+    @Override
+    public List<UserDto> findNistagramUser(String nistagramUsername) {
+        ArrayList<NistagramUser> users = (ArrayList<NistagramUser>) nistagramUserRepository.findAll();
+        ArrayList<UserDto> userDtos = new ArrayList<>();
+
+        users.forEach(user -> {
+            if (user.getNistagramUsername().contains(nistagramUsername)) {
+                userDtos.add(UserDto.convertUserToDto(user));
+            }
+        });
+        return userDtos;
+    }
+
 
     private NistagramUser getCurrentlyLoggedUser() {
         return (NistagramUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

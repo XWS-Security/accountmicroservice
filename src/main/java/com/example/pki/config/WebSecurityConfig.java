@@ -56,8 +56,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/register/**").permitAll()
                 .antMatchers("/login/**").permitAll()
                 .antMatchers("/test/").hasAuthority("NISTAGRAM_USER_PRIVILEGE")
-                .antMatchers("/profile/").hasAuthority("NISTAGRAM_USER_PRIVILEGE")
+                .antMatchers("/profile/updateProfileInfo").hasAuthority("NISTAGRAM_USER_PRIVILEGE")
+                .antMatchers("/profile/getUserInfo").hasAuthority("NISTAGRAM_USER_PRIVILEGE")
                 .antMatchers("/certificate/").hasAuthority("CERTIFICATE")
+                .antMatchers("/profile/getAllUsers").permitAll()
+                .antMatchers("/profile/searchUser/{nistagramUsername}").permitAll()
                 .anyRequest().authenticated().and()
                 .cors().and()
                 .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),

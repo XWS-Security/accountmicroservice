@@ -11,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "/profile", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ProfileController {
@@ -23,12 +25,12 @@ public class ProfileController {
         this.profileService = profileService;
     }
 
-    @GetMapping("/")
-    public ResponseEntity<UserDto> getCACertificates() {
+    @GetMapping("/getUserInfo")
+    public ResponseEntity<UserDto> getUserInfo() {
         return new ResponseEntity<>(profileService.extractUserInfo(), HttpStatus.OK);
     }
 
-    @PutMapping("/")
+    @PutMapping("/updateProfileInfo")
     public ResponseEntity<String> updateProfileInfo(@RequestBody UserDto userDto) {
         try {
             profileService.updateUserInfo(userDto);
@@ -38,5 +40,15 @@ public class ProfileController {
         } catch (Exception e) {
             return new ResponseEntity<>("Something went wrong!", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping("/getAllUsers")
+    public ResponseEntity<List<UserDto>> getAllNistagramUsers() {
+        return new ResponseEntity<>(profileService.findAllNistagramUsers(), HttpStatus.OK);
+    }
+
+    @GetMapping("/searchUser/{nistagramUsername}")
+    public ResponseEntity<List<UserDto>> getNistagramUserByUsername(@PathVariable("nistagramUsername") String nistagramUsername) {
+        return new ResponseEntity<>(profileService.findNistagramUser(nistagramUsername), HttpStatus.OK);
     }
 }
