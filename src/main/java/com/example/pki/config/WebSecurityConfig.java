@@ -61,6 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/certificate/").hasAuthority("CERTIFICATE")
                 .antMatchers("/profile/getAllUsers").permitAll()
                 .antMatchers("/profile/searchUser/{nistagramUsername}").permitAll()
+                .antMatchers("/test/hitMicroservice").permitAll()
                 .anyRequest().authenticated().and()
                 .cors().and()
                 .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),
