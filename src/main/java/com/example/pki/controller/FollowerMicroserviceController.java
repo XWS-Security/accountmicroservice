@@ -20,15 +20,21 @@ public class FollowerMicroserviceController {
     @GetMapping("/hitMicroservice") // Purpose of this method is to show communication between microservices
     public Flux<String> hitFollowerMicroservice() throws IOException {
 
+        System.out.println(followerMicroserviceURI);
+
         // Creating web client.
         WebClient client = WebClient.builder()
                 .baseUrl(followerMicroserviceURI)
                 .build();
 
         // Define a method.
-        return client.get()
+        Flux<String> response = client.get()
                 .uri("/users/hit")
                 .retrieve()
                 .bodyToFlux(String.class);
+
+        System.out.println(response);
+
+        return response;
     }
 }
