@@ -24,7 +24,7 @@ public class FollowerMicroserviceController {
 
         // Creating web client.
         WebClient client = WebClient.builder()
-                .baseUrl(followerMicroserviceURI)
+                .baseUrl("http://followermicroservice/")
                 .build();
 
         // Define a method.
