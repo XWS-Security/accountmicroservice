@@ -3,8 +3,11 @@ package com.example.pki.certificate;
 import com.example.pki.exceptions.CouldNotGenerateCertificateException;
 import com.example.pki.model.IssuerData;
 import com.example.pki.model.SubjectData;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -48,12 +51,12 @@ public class CertificateGenerator {
                 certificateBuilder.addExtension(Extension.subjectKeyIdentifier, false, rootCertExtUtils.createSubjectKeyIdentifier(subjectData.getPublicKey()));
             }
 
-            // TODO: Extensions for localhost (check if necessary)
-//            DERSequence subjectAlternativeNames = new DERSequence(new ASN1Encodable[]{
-//                    new GeneralName(GeneralName.dNSName, "localhost"),
-//                    new GeneralName(GeneralName.dNSName, "127.0.0.1")
-//            });
-//            certGen.addExtension(Extension.subjectAlternativeName, false, subjectAlternativeNames);
+            // Extensions for localhost
+            DERSequence subjectAlternativeNames = new DERSequence(new ASN1Encodable[]{
+                    new GeneralName(GeneralName.dNSName, "localhost"),
+                    new GeneralName(GeneralName.dNSName, "127.0.0.1")
+            });
+            certificateBuilder.addExtension(Extension.subjectAlternativeName, false, subjectAlternativeNames);
 
             // Create certificate holder
             X509CertificateHolder certificateHolder = certificateBuilder.build(contentSigner);
