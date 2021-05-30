@@ -1,6 +1,7 @@
 package com.example.pki.model;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -20,6 +21,9 @@ public class OCSPCertificate {
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "issuer_id", referencedColumnName = "id")
     private OCSPCertificate issuer;
+
+    @OneToMany(mappedBy = "issuer")
+    private List<OCSPCertificate> issued;
 
     public OCSPCertificate() {
     }
@@ -66,6 +70,14 @@ public class OCSPCertificate {
         this.issuer = issuer;
     }
 
+    public List<OCSPCertificate> getIssued() {
+        return issued;
+    }
+
+    public void setIssued(List<OCSPCertificate> issued) {
+        this.issued = issued;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -83,5 +95,8 @@ public class OCSPCertificate {
 
     public void revoke() {
         this.revoked = true;
+        for (OCSPCertificate issued : getIssued()) {
+            issued.revoke();
+        }
     }
 }

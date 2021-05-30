@@ -50,8 +50,8 @@ public class CertificateServiceImpl implements CertificateService {
         }
 
         if (dto.getCa() != CA.Root) {
-            X509Certificate parent = readCertificateFromPfx(parentName);
             // TODO: Check if parent is CA
+            X509Certificate parent = readCertificateFromPfx(parentName);
 //            if (parent.getBasicConstraints() == -1) {
 //                throw new CertificateIsNotCA();
 //            }
@@ -101,9 +101,8 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public void revoke(String certificateAlias) {
-        // TODO: Refactor: revoke every in chain
         OCSPCertificate certificate = certificateRepository.findByFileName(certificateAlias);
-        certificate.setRevoked(true);
+        certificate.revoke();
         certificateRepository.save(certificate);
     }
 
