@@ -27,7 +27,7 @@ public class CertificateController {
     @PostMapping("/createCertificate")
     public ResponseEntity<String> generateCertificate(@RequestBody CertificateDto certificateDto) {
         try {
-            certificateService.generateCertificate(certificateDto);
+            certificateService.generate(certificateDto);
             return new ResponseEntity<>("Certificate successfully added!", HttpStatus.OK);
         } catch (CertificateAlreadyExists e) {
             return new ResponseEntity<>("Certificate with that name already exists!", HttpStatus.BAD_REQUEST);
@@ -51,7 +51,7 @@ public class CertificateController {
     @PostMapping("/revoke")
     public ResponseEntity<String> revokeCertificate(@RequestBody CertificateDto certificateDto) {
         try {
-            certificateService.changeCertificateStatus(certificateDto.getCertificateName());
+            certificateService.revoke(certificateDto.getCertificateName());
             return new ResponseEntity<>("Certificate successfully revoked!", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Something went wrong!", HttpStatus.BAD_REQUEST);

@@ -1,7 +1,6 @@
 package com.example.pki.service.impl;
 
 import com.example.pki.exceptions.CertificateAlreadyExists;
-import com.example.pki.exceptions.CertificateIsNotCA;
 import com.example.pki.exceptions.CertificateIsNotValid;
 import com.example.pki.certificate.CertificateGenerator;
 import com.example.pki.keystore.KeyStoreReader;
@@ -15,9 +14,12 @@ import com.example.pki.repository.CertificateRepository;
 import com.example.pki.service.CertificateService;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -38,21 +40,8 @@ public class CertificateServiceImpl implements CertificateService {
         this.certificateRepository = certificateRepository;
     }
 
-    // CertName - alias - slace se kroz front
-    // keyStorePass - 123
-    // pass - 123
-
     @Override
-    public void generateCertificate(CertificateDto dto) {
-        CertificateGenerator certificateGenerator = new CertificateGenerator();
-        DataKeyPair pair = generateSubjectDataAndKey(dto);
-        SubjectData subjectData = pair.subjectData;
-
-        IssuerData issuerData;
-        KeyPair keyPairSubject = this.generateKeyPair();
-        KeyStoreWriter writer = new KeyStoreWriter();
-        KeyStoreReader reader = new KeyStoreReader();
-
+    public void generate(CertificateDto dto) {
         String certificateName = dto.getCertificateName();
         String parentName = dto.getParentName();
 
@@ -60,112 +49,74 @@ public class CertificateServiceImpl implements CertificateService {
             throw new CertificateAlreadyExists();
         }
 
-        switch (dto.getCa()) {
+        if (dto.getCa() != CA.Root) {
+            X509Certificate parent = readCertificateFromPfx(parentName);
+            // TODO: Check if parent is CA
+//            if (parent.getBasicConstraints() == -1) {
+//                throw new CertificateIsNotCA();
+//            }
+            if (!isCertificateValid(parentName)) {
+                throw new CertificateIsNotValid();
+            }
+        }
 
+        DataKeyPair pair = generateSubjectDataAndKey(dto);
+        SubjectData subjectData = pair.subjectData;
+
+        IssuerData issuerData;
+        boolean isCA;
+        OCSPCertificate issuerOCSP;
+
+        switch (dto.getCa()) {
             case Root:
-                issuerData = generateIssuerData(pair.privateKey, dto);
-                X509Certificate certificate = certificateGenerator.generateCertificate(subjectData, issuerData, true);
-                writer.loadKeyStore(null, KEY_STORE_PASS.toCharArray());
-                writer.write(certificateName, issuerData.getPrivateKey(), PASS.toCharArray(), certificate);
-                writer.saveKeyStore("data/" + certificateName, KEY_STORE_PASS.toCharArray());
-                OCSPCertificate ocspCertificate = new OCSPCertificate(certificateName, null);
-                certificateRepository.save(ocspCertificate);
+                issuerData = generateIssuerData(pair.privateKey, "Self-signed");
+                issuerOCSP = null;
+                isCA = true;
                 break;
 
             case Intermediate:
-                X509Certificate parent = (X509Certificate) reader.readCertificate("data/" + parentName,
-                        KEY_STORE_PASS, parentName);
-                if (parent.getBasicConstraints() == -1) {
-                    throw new CertificateIsNotCA();
-                }
-
-                if (!isCertificateValid(parentName)) {
-                    throw new CertificateIsNotValid();
-                }
-
-                issuerData = generateIssuerData(reader.readPrivateKey("data/" + parentName, KEY_STORE_PASS, parentName, PASS), dto);
-                X509Certificate certificateIntermediate = certificateGenerator.generateCertificate(subjectData, issuerData, true);
-
-                writer.loadKeyStore(null, KEY_STORE_PASS.toCharArray());
-                writer.write(certificateName, issuerData.getPrivateKey(), PASS.toCharArray(), certificateIntermediate);
-                writer.saveKeyStore("data/" + certificateName, KEY_STORE_PASS.toCharArray());
-
-                X509Certificate certificateLoadedIntermediate = (X509Certificate) reader.readCertificate("data/" + certificateName,
-                        KEY_STORE_PASS, certificateName);
-                System.out.println(certificateLoadedIntermediate.getIssuerX500Principal().getName());
-
-                OCSPCertificate ocspCertificateIntermediate = new OCSPCertificate(certificateName, certificateRepository.findByFileName(parentName));
-                certificateRepository.save(ocspCertificateIntermediate);
+                PrivateKey parentKey = readPrivateKeyFromPfx(parentName);
+                issuerData = generateIssuerData(parentKey, parentName);
+                issuerOCSP = certificateRepository.findByFileName(parentName);
+                isCA = true;
                 break;
 
-            case EndEntity:
-                X509Certificate endEntityParent = (X509Certificate) reader.readCertificate("data/" + parentName,
-                        KEY_STORE_PASS, parentName);
-                if (endEntityParent.getBasicConstraints() == -1) {
-                    throw new CertificateIsNotCA();
-                }
-
-                if (!isCertificateValid(parentName)) {
-                    throw new CertificateIsNotValid();
-                }
-
-                issuerData = generateIssuerData(reader.readPrivateKey("data/" + parentName, KEY_STORE_PASS, parentName, PASS), dto);
-                X509Certificate endEntity = certificateGenerator.generateCertificate(subjectData, issuerData, false);
-
-                writer.loadKeyStore(null, KEY_STORE_PASS.toCharArray());
-                writer.write(certificateName, issuerData.getPrivateKey(), PASS.toCharArray(), endEntity);
-                writer.saveKeyStore("data/" + certificateName, KEY_STORE_PASS.toCharArray());
-
-                X509Certificate certificateLoadedEndEntity = (X509Certificate) reader.readCertificate("data/" + certificateName,
-                        KEY_STORE_PASS, certificateName);
-                System.out.println(certificateLoadedEndEntity.getIssuerX500Principal().getName());
-
-                OCSPCertificate ocspCertificateEndEntity = new OCSPCertificate(certificateName, certificateRepository.findByFileName(parentName));
-                certificateRepository.save(ocspCertificateEndEntity);
+            default: // End-entity
+                PrivateKey parentKeyEnd = readPrivateKeyFromPfx(parentName);
+                issuerData = generateIssuerData(parentKeyEnd, parentName);
+                issuerOCSP = certificateRepository.findByFileName(parentName);
+                isCA = false;
         }
+
+        // Generate certificate
+        CertificateGenerator certificateGenerator = new CertificateGenerator();
+        X509Certificate certificate = certificateGenerator.generateCertificate(subjectData, issuerData, isCA);
+        // Save to keystore
+        saveCertAsPfx(certificate, certificateName, issuerData.getPrivateKey());
+        // Save OCSP data in database
+        saveOCSPData(certificateName, issuerOCSP);
+        // Save in pem format to use in front app
+        saveCertAndPrivateKeyPems(certificateName, certificate, pair.privateKey);
     }
 
     @Override
-    public void changeCertificateStatus(String certificateAlias) {
+    public void revoke(String certificateAlias) {
+        // TODO: Refactor: revoke every in chain
         OCSPCertificate certificate = certificateRepository.findByFileName(certificateAlias);
         certificate.setRevoked(true);
         certificateRepository.save(certificate);
     }
 
     @Override
-    public boolean isAnyInChainRevoked(String certificateAlias) {
-        OCSPCertificate certificate = certificateRepository.findByFileName(certificateAlias);
-        if (certificate.isRevoked()) {
-            return true;
-        }
-        if (certificate.getIssuer() != null) {
-            return isAnyInChainRevoked(certificate.getIssuer().getFileName());
-        }
-        return false;
+    public boolean isCertificateValid(String alias) {
+        OCSPCertificate ocspCertificate = certificateRepository.findByFileName(alias);
+        X509Certificate x509Certificate = readCertificateFromPfx(alias);
+        return !ocspCertificate.isRevoked() && !isCertificateExpired(x509Certificate);
     }
 
-    @Override
-    public boolean isAnyInChainOutdated(String certificateName) {
+    private boolean isCertificateExpired(X509Certificate certificate) {
         Date today = new Date();
-        KeyStoreReader reader = new KeyStoreReader();
-
-        X509Certificate certificate = (X509Certificate) reader.readCertificate("data/" + certificateName,
-                KEY_STORE_PASS, certificateName);
-        OCSPCertificate ocspCertificate = certificateRepository.findByFileName(certificateName);
-
-        if (today.after(certificate.getNotBefore()) && today.before(certificate.getNotAfter())) {
-            if (ocspCertificate.getIssuer() != null) {
-                return isAnyInChainOutdated(ocspCertificate.getIssuer().getFileName());
-            }
-        } else {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean isCertificateValid(String certificateAlias) {
-        return !(isAnyInChainOutdated(certificateAlias) || isAnyInChainRevoked(certificateAlias));
+        return today.before(certificate.getNotBefore()) || today.after(certificate.getNotAfter());
     }
 
     public List<CertificateDto> getCertificates(boolean onlyCA) {
@@ -175,8 +126,9 @@ public class CertificateServiceImpl implements CertificateService {
 
         ocspCertificates.forEach(ocspCertificate -> {
             String certificateName = ocspCertificate.getFileName();
-            X509Certificate certificate = (X509Certificate) reader.readCertificate("data/" + certificateName,
-                    KEY_STORE_PASS, certificateName);
+            String certificateFileName = "data/" + certificateName + ".pfx";
+            X509Certificate certificate = (X509Certificate)
+                    reader.readCertificate(certificateFileName, KEY_STORE_PASS, certificateName);
 
             CertificateDto certificateDto = new CertificateDto();
             certificateDto.setStartDate(certificate.getNotBefore());
@@ -185,21 +137,20 @@ public class CertificateServiceImpl implements CertificateService {
             certificateDto.setRevoked(ocspCertificate.isRevoked());
             certificateDto.setValid(isCertificateValid(ocspCertificate.getFileName()));
 
-            if (certificate.getBasicConstraints() != -1) {
-
-                if (ocspCertificate.getIssuer() == null) {
-                    certificateDto.setCa(CA.Root);
-                    certificateDto.setParentName("Self-signed");
-                } else {
-                    certificateDto.setCa(CA.Intermediate);
-                    certificateDto.setParentName(ocspCertificate.getIssuer().getFileName());
-                }
-                certificateDtos.add(certificateDto);
-            } else if (!onlyCA) {
-                certificateDto.setCa(CA.EndEntity);
+//            if (certificate.getBasicConstraints() != -1) {
+            if (ocspCertificate.getIssuer() == null) {
+                certificateDto.setCa(CA.Root);
+                certificateDto.setParentName("Self-signed");
+            } else {
+                certificateDto.setCa(CA.Intermediate);
                 certificateDto.setParentName(ocspCertificate.getIssuer().getFileName());
-                certificateDtos.add(certificateDto);
             }
+            certificateDtos.add(certificateDto);
+//            } else if (!onlyCA) {
+//                certificateDto.setCa(CA.EndEntity);
+//                certificateDto.setParentName(ocspCertificate.getIssuer().getFileName());
+//                certificateDtos.add(certificateDto);
+//            }
         });
 
         return certificateDtos;
@@ -220,14 +171,9 @@ public class CertificateServiceImpl implements CertificateService {
         return null;
     }
 
-    private IssuerData generateIssuerData(PrivateKey issuerKey, CertificateDto dto) {
+    private IssuerData generateIssuerData(PrivateKey issuerKey, String parent) {
         X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-        if (dto.getParentName() == null) {
-            builder.addRDN(BCStyle.CN, "Self-signed");
-        } else {
-            builder.addRDN(BCStyle.CN, dto.getParentName());
-        }
-
+        builder.addRDN(BCStyle.CN, parent);
         return new IssuerData(issuerKey, builder.build());
     }
 
@@ -247,8 +193,47 @@ public class CertificateServiceImpl implements CertificateService {
         return new DataKeyPair(subjectData, keyPairSubject.getPrivate());
     }
 
-    private class DataKeyPair {
+    private PrivateKey readPrivateKeyFromPfx(String name) {
+        KeyStoreReader reader = new KeyStoreReader();
+        String fileName = "data/" + name + ".pfx";
+        return reader.readPrivateKey(fileName, KEY_STORE_PASS, name, PASS);
+    }
 
+    private X509Certificate readCertificateFromPfx(String name) {
+        KeyStoreReader reader = new KeyStoreReader();
+        String fileName = "data/" + name + ".pfx";
+        return (X509Certificate) reader.readCertificate(fileName, KEY_STORE_PASS, name);
+    }
+
+    private void saveOCSPData(String certificateName, OCSPCertificate issuer) {
+        OCSPCertificate ocspCertificate = new OCSPCertificate(certificateName, issuer);
+        certificateRepository.save(ocspCertificate);
+    }
+
+    private void saveCertAsPfx(X509Certificate certificate, String name, PrivateKey issuerPrivateKey) {
+        KeyStoreWriter writer = new KeyStoreWriter();
+        String fileName = "data/" + name + ".pfx";
+        writer.loadKeyStore(null, KEY_STORE_PASS.toCharArray());
+        writer.write(name, issuerPrivateKey, PASS.toCharArray(), certificate);
+        writer.saveKeyStore(fileName, KEY_STORE_PASS.toCharArray());
+    }
+
+    private void saveCertAndPrivateKeyPems(String name, X509Certificate certificate, PrivateKey privateKey) {
+        String certFileName = "data/" + name + "-cert.pem";
+        saveAsPem(certFileName, certificate);
+        String keyFileName = "data/" + name + "-key.pem";
+        saveAsPem(keyFileName, privateKey);
+    }
+
+    private void saveAsPem(String fileName, Object object) {
+        try (JcaPEMWriter pemWriter = new JcaPEMWriter(new FileWriter(fileName))) {
+            pemWriter.writeObject(object);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class DataKeyPair {
         public SubjectData subjectData;
         public PrivateKey privateKey;
 
