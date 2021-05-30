@@ -15,7 +15,7 @@ public class OCSPCertificate {
     private String fileName;
 
     @Column
-    private boolean isRevoked;
+    private boolean revoked;
 
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "issuer_id", referencedColumnName = "id")
@@ -27,7 +27,7 @@ public class OCSPCertificate {
     public OCSPCertificate(String fileName, OCSPCertificate issuer) {
         this.fileName = fileName;
         this.issuer = issuer;
-        this.isRevoked = false;
+        this.revoked = false;
     }
 
     public Long getId() {
@@ -46,20 +46,24 @@ public class OCSPCertificate {
         this.fileName = fileName;
     }
 
+    public boolean isRevoked() {
+        return revoked;
+    }
+
+    public Boolean getRevoked() {
+        return revoked;
+    }
+
+    public void setRevoked(boolean revoked) {
+        this.revoked = revoked;
+    }
+
     public OCSPCertificate getIssuer() {
         return issuer;
     }
 
     public void setIssuer(OCSPCertificate issuer) {
         this.issuer = issuer;
-    }
-
-    public boolean isRevoked() {
-        return isRevoked;
-    }
-
-    public void setRevoked(boolean revoked) {
-        isRevoked = revoked;
     }
 
     @Override
@@ -75,5 +79,9 @@ public class OCSPCertificate {
     @Override
     public int hashCode() {
         return Objects.hash(id, fileName, issuer);
+    }
+
+    public void revoke() {
+        this.revoked = true;
     }
 }

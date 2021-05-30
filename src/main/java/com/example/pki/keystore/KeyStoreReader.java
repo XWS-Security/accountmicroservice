@@ -24,7 +24,7 @@ public class KeyStoreReader {
 
     public KeyStoreReader() {
         try {
-            keyStore = KeyStore.getInstance("JKS", "SUN");
+            keyStore = KeyStore.getInstance("PKCS12", "SUN");
         } catch (KeyStoreException e) {
             e.printStackTrace();
         } catch (NoSuchProviderException e) {
@@ -59,18 +59,14 @@ public class KeyStoreReader {
 
     public Certificate readCertificate(String keyStoreFile, String keyStorePass, String alias) {
         try {
-            KeyStore ks = KeyStore.getInstance("JKS", "SUN");
-
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStoreFile));
-            ks.load(in, keyStorePass.toCharArray());
+            keyStore.load(in, keyStorePass.toCharArray());
 
-            if(ks.isKeyEntry(alias)) {
-                Certificate cert = ks.getCertificate(alias);
+            if (keyStore.isKeyEntry(alias)) {
+                Certificate cert = keyStore.getCertificate(alias);
                 return cert;
             }
         } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (NoSuchProviderException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -86,18 +82,14 @@ public class KeyStoreReader {
 
     public PrivateKey readPrivateKey(String keyStoreFile, String keyStorePass, String alias, String pass) {
         try {
-            KeyStore ks = KeyStore.getInstance("JKS", "SUN");
-
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStoreFile));
-            ks.load(in, keyStorePass.toCharArray());
+            keyStore.load(in, keyStorePass.toCharArray());
 
-            if(ks.isKeyEntry(alias)) {
-                PrivateKey pk = (PrivateKey) ks.getKey(alias, pass.toCharArray());
+            if (keyStore.isKeyEntry(alias)) {
+                PrivateKey pk = (PrivateKey) keyStore.getKey(alias, pass.toCharArray());
                 return pk;
             }
         } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (NoSuchProviderException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

@@ -5,13 +5,9 @@ import com.example.pki.model.dto.CertificateDto;
 import java.util.List;
 
 public interface CertificateService {
-    void generateCertificate(CertificateDto dto);
+    void generate(CertificateDto dto);
 
-    void changeCertificateStatus(String certificateAlias);
-
-    boolean isAnyInChainRevoked(String certificateAlias);
-
-    boolean isAnyInChainOutdated(String certificateAlias);
+    void revoke(String certificateAlias);
 
     boolean isCertificateValid(String certificateAlias);
 
