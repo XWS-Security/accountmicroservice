@@ -3,6 +3,8 @@ package com.example.pki.controller;
 import com.example.pki.exceptions.CertificateAlreadyExists;
 import com.example.pki.exceptions.CertificateIsNotCA;
 import com.example.pki.exceptions.CertificateIsNotValid;
+import com.example.pki.exceptions.CouldNotGenerateCertificateException;
+import com.example.pki.exceptions.CouldNotGenerateKeyPairException;
 import com.example.pki.model.dto.CertificateDto;
 import com.example.pki.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +31,8 @@ public class CertificateController {
         try {
             certificateService.generate(certificateDto);
             return new ResponseEntity<>("Certificate successfully added!", HttpStatus.OK);
-        } catch (CertificateAlreadyExists e) {
-            return new ResponseEntity<>("Certificate with that name already exists!", HttpStatus.BAD_REQUEST);
-        } catch (CertificateIsNotValid e) {
-            return new ResponseEntity<>("Certificate is not valid!", HttpStatus.BAD_REQUEST);
-        } catch (CertificateIsNotCA e) {
-            return new ResponseEntity<>("Certificate is not CA!", HttpStatus.BAD_REQUEST);
+        } catch (CertificateAlreadyExists | CertificateIsNotValid | CertificateIsNotCA | CouldNotGenerateKeyPairException | CouldNotGenerateCertificateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
