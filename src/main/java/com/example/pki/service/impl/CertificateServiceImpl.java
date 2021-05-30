@@ -60,7 +60,7 @@ public class CertificateServiceImpl implements CertificateService {
 
         switch (dto.getCa()) {
             case Root:
-                issuerData = generateIssuerData(pair.privateKey, "Self-signed");
+                issuerData = new IssuerData(pair.privateKey, subjectData.getX500name());
                 issuerOCSP = null;
                 isCA = true;
                 break;
