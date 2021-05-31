@@ -23,12 +23,16 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private final CustomUserDetailsService jwtUserDetailsService;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final TokenUtils tokenUtils;
+
     @Autowired
-    private CustomUserDetailsService jwtUserDetailsService;
-    @Autowired
-    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-    @Autowired
-    private TokenUtils tokenUtils;
+    public WebSecurityConfig(CustomUserDetailsService jwtUserDetailsService, RestAuthenticationEntryPoint restAuthenticationEntryPoint, TokenUtils tokenUtils) {
+        this.jwtUserDetailsService = jwtUserDetailsService;
+        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
+        this.tokenUtils = tokenUtils;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -67,6 +71,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),
                         BasicAuthenticationFilter.class);
         http.csrf().disable();
+
+        // Enables SSL
+        http.requiresChannel().anyRequest().requiresSecure();
     }
 
     @Override
