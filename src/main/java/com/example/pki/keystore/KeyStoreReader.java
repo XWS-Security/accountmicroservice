@@ -2,7 +2,6 @@ package com.example.pki.keystore;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -14,6 +13,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+import com.example.pki.exceptions.KeystoreErrorException;
 import com.example.pki.model.IssuerData;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -25,10 +25,9 @@ public class KeyStoreReader {
     public KeyStoreReader() {
         try {
             keyStore = KeyStore.getInstance("PKCS12", "SUN");
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (NoSuchProviderException e) {
-            e.printStackTrace();
+        } catch (KeyStoreException | NoSuchProviderException e) {
+            // TODO: log error
+            throw new KeystoreErrorException();
         }
     }
 
@@ -41,20 +40,10 @@ public class KeyStoreReader {
             PrivateKey privKey = (PrivateKey) keyStore.getKey(alias, keyPass);
             X500Name issuerName = new JcaX509CertificateHolder((X509Certificate) cert).getSubject();
             return new IssuerData(privKey, issuerName);
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (UnrecoverableKeyException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (UnrecoverableKeyException | CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
+            // TODO: log error
+            throw new KeystoreErrorException();
         }
-        return null;
     }
 
     public Certificate readCertificate(String keyStoreFile, String keyStorePass, String alias) {
@@ -63,19 +52,11 @@ public class KeyStoreReader {
             keyStore.load(in, keyStorePass.toCharArray());
 
             if (keyStore.isKeyEntry(alias)) {
-                Certificate cert = keyStore.getCertificate(alias);
-                return cert;
+                return keyStore.getCertificate(alias);
             }
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+            // TODO: log error
+            throw new KeystoreErrorException();
         }
         return null;
     }
@@ -86,21 +67,11 @@ public class KeyStoreReader {
             keyStore.load(in, keyStorePass.toCharArray());
 
             if (keyStore.isKeyEntry(alias)) {
-                PrivateKey pk = (PrivateKey) keyStore.getKey(alias, pass.toCharArray());
-                return pk;
+                return (PrivateKey) keyStore.getKey(alias, pass.toCharArray());
             }
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (UnrecoverableKeyException e) {
-            e.printStackTrace();
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | UnrecoverableKeyException e) {
+            // TODO: log error
+            throw new KeystoreErrorException();
         }
         return null;
     }

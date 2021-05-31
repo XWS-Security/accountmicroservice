@@ -1,10 +1,6 @@
 package com.example.pki.controller;
 
-import com.example.pki.exceptions.CertificateAlreadyExists;
-import com.example.pki.exceptions.CertificateIsNotCA;
-import com.example.pki.exceptions.CertificateIsNotValid;
-import com.example.pki.exceptions.CouldNotGenerateCertificateException;
-import com.example.pki.exceptions.CouldNotGenerateKeyPairException;
+import com.example.pki.exceptions.*;
 import com.example.pki.model.dto.CertificateDto;
 import com.example.pki.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,19 +27,28 @@ public class CertificateController {
         try {
             certificateService.generate(certificateDto);
             return new ResponseEntity<>("Certificate successfully added!", HttpStatus.OK);
-        } catch (CertificateAlreadyExists | CertificateIsNotValid | CertificateIsNotCA | CouldNotGenerateKeyPairException | CouldNotGenerateCertificateException e) {
+        } catch (CertificateAlreadyExists | CertificateIsNotValid | CertificateIsNotCA | CouldNotGenerateKeyPairException
+                | CouldNotGenerateCertificateException | KeystoreErrorException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("/getCA")
     public ResponseEntity<List<CertificateDto>> getCACertificates() {
-        return new ResponseEntity<>(certificateService.getCertificates(true), HttpStatus.OK);
+        try {
+            return new ResponseEntity<>(certificateService.getCertificates(true), HttpStatus.OK);
+        } catch (KeystoreErrorException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/getAllCertificates")
     public ResponseEntity<List<CertificateDto>> getAllCertificates() {
-        return new ResponseEntity<>(certificateService.getCertificates(false), HttpStatus.OK);
+        try {
+            return new ResponseEntity<>(certificateService.getCertificates(false), HttpStatus.OK);
+        } catch (KeystoreErrorException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping("/revoke")
