@@ -56,6 +56,12 @@ public abstract class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
     private List<Role> roles;
 
+    @Column(name = "two_factor_auth_secret")
+    private String twoFactorAuthSecret;
+
+    @Column(name = "two_factor_auth_count")
+    private int twoFactorAuthCount = 0;
+
     protected User() {
     }
 
@@ -167,6 +173,22 @@ public abstract class User implements UserDetails {
         this.enabled = false;
     }
 
+    public String getTwoFactorAuthSecret() {
+        return twoFactorAuthSecret;
+    }
+
+    public void setTwoFactorAuthSecret(String twoFactorAuthSecret) {
+        this.twoFactorAuthSecret = twoFactorAuthSecret;
+    }
+
+    public int getTwoFactorAuthCount() {
+        return twoFactorAuthCount;
+    }
+
+    public void setTwoFactorAuthCount(int twoFactorAuthCount) {
+        this.twoFactorAuthCount = twoFactorAuthCount;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -216,6 +238,15 @@ public abstract class User implements UserDetails {
     public void resetPasswordResetCode() {
         this.passwordResetCode = null;
         this.passwordResetFailed = 0;
+    }
+
+    public void incrementTwoAuthFactorCount() {
+        this.twoFactorAuthCount++;
+    }
+
+    public void resetTwoAuthFactorCount() {
+        this.twoFactorAuthSecret = null;
+        this.twoFactorAuthCount = 0;
     }
 
     private List<GrantedAuthority> getGrantedAuthorities() {

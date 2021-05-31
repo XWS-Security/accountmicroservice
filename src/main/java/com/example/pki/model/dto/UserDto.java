@@ -3,20 +3,47 @@ package com.example.pki.model.dto;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.enums.Gender;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 import java.util.Date;
 
 public class UserDto implements Serializable {
 
+    @NotNull
+    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
     private String username;
+
+    @NotNull
+    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
     private String name;
+
+    @NotNull
+    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
     private String surname;
+
+    @NotNull
+    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
     private String email;
+
+    @NotNull
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$", message = "Invalid character!")
     private String password;
+
+    @NotNull
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$", message = "Invalid character!")
     private String repeatedPassword;
+
+    @NotNull
     private Gender gender;
+
+    @Pattern(regexp = "^[0-9]*", message = "Invalid character!")
     private String phoneNumber;
+
+    @NotNull
     private Date dateOfBirth;
+
+    @Pattern(regexp = "^[^<>]*", message = "Invalid character!")
     private String about;
 
     public UserDto() {

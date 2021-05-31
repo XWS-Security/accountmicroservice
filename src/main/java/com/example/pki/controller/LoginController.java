@@ -1,6 +1,6 @@
 package com.example.pki.controller;
 
-import com.example.pki.exceptions.InvalidCharacterException;
+import com.example.pki.exceptions.*;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.LogInDto;
 import com.example.pki.model.dto.UserTokenState;
@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -33,13 +35,21 @@ public class LoginController {
         this.userDetailsService = userDetailsService;
     }
 
+    @PostMapping("/twoFactorAuth")
+    public ResponseEntity<String> sendTwoFactorAuthSecret(@RequestBody @Valid LogInDto authenticationRequest) {
+        try {
+            logInService.sendTwoFactorAuthSecret(authenticationRequest);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (PasswordsDoNotMatch | PasswordIsNotValid | MessagingException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PostMapping("/")
-    public ResponseEntity<UserTokenState> createAuthenticationToken(@RequestBody LogInDto authenticationRequest) {
+    public ResponseEntity<UserTokenState> createAuthenticationToken(@RequestBody @Valid LogInDto authenticationRequest) {
         try {
             UserTokenState state = logInService.logIn(authenticationRequest);
             return ResponseEntity.ok(state);
-        } catch (InvalidCharacterException e) {
-            return new ResponseEntity<UserTokenState>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<UserTokenState>(HttpStatus.BAD_REQUEST);
         }
@@ -49,8 +59,10 @@ public class LoginController {
     public ResponseEntity<UserTokenState> refreshAuthenticationToken(HttpServletRequest request) {
         String token = tokenUtils.getToken(request);
         String username = this.tokenUtils.getUsernameFromToken(token);
+
         User user = (User) this.userDetailsService.loadUserByUsername(username);
         String userType = user.getClass().getSimpleName();
+
         if (this.tokenUtils.canTokenBeRefreshed(token, user.getLastPasswordResetDate())) {
             String refreshedToken = tokenUtils.refreshToken(token);
             int expiresIn = tokenUtils.getExpiredIn();
