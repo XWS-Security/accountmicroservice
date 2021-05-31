@@ -21,13 +21,9 @@ import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import java.sql.Timestamp;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class PasswordResetServiceImpl implements PasswordResetService {
-//    private static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{10,20}$";
-//    private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -62,13 +58,6 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     public void resetPassword(ResetPasswordDto passwordDto) throws BadPasswordResetCodeException, PasswordsDoNotMatch, PasswordIsNotValid, PasswordResetTriesExceededException {
         User user = userRepository.findByEmail(passwordDto.getEmail());
 
-//        if (passwordDto.getEmail().contains("<") || passwordDto.getEmail().contains(">")
-//                || passwordDto.getCode().contains("<") || passwordDto.getCode().contains(">")
-//                || passwordDto.getNewPassword().contains("<") || passwordDto.getNewPassword().contains(">")
-//                || passwordDto.getNewPasswordRepeated().contains("<") || passwordDto.getNewPasswordRepeated().contains(">")) {
-//            throw new InvalidCharacterException();
-//        }
-
         if (!passwordDto.getCode().equals(user.getPasswordResetCode())) {
             user.incrementPasswordResetFailed();
             if (user.getPasswordResetFailed() >= 3) {
@@ -90,11 +79,6 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     public UserTokenState changePassword(ChangePasswordDto passwordDto, String email) throws PasswordsDoNotMatch, PasswordIsNotValid, BadCredentialsException {
-//        if (passwordDto.getOldPassword().contains("<") || passwordDto.getOldPassword().contains(">")
-//                || passwordDto.getNewPassword().contains("<") || passwordDto.getNewPassword().contains(">")
-//                || passwordDto.getNewPasswordRepeated().contains("<") || passwordDto.getNewPasswordRepeated().contains(">")) {
-//            throw new InvalidCharacterException();
-//        }
 
         User user = userRepository.findByEmail(email);
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, passwordDto.getOldPassword()));
@@ -110,13 +94,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     private void validatePasswords(String password, String passwordRepeated) throws PasswordsDoNotMatch, PasswordIsNotValid {
         if (!password.equals(passwordRepeated)) throw new PasswordsDoNotMatch();
-//        if (!isPasswordSafe(password)) throw new PasswordIsNotValid();
     }
-
-//    private boolean isPasswordSafe(String password) {
-//        Matcher matcher = pattern.matcher(password);
-//        return matcher.matches();
-//    }
 
     private UserTokenState authenticateUser(String email, String password) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
