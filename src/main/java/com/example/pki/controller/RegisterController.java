@@ -41,7 +41,7 @@ public class RegisterController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<String> registerUser(HttpServletRequest request, @RequestBody @Valid UserDto dto) {
+    public ResponseEntity<String> registerUser(HttpServletRequest request, @RequestBody @Valid RegisterDto dto) {
         if (!validUserInfo(dto.getEmail(), dto.getPassword())) {
             return new ResponseEntity<>(missingBasicUserInfoAlert, HttpStatus.BAD_REQUEST);
         }

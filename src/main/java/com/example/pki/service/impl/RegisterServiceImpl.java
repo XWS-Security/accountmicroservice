@@ -1,12 +1,15 @@
 package com.example.pki.service.impl;
 
-import com.example.pki.exceptions.*;
+import com.example.pki.exceptions.BadActivationCodeException;
+import com.example.pki.exceptions.PasswordIsNotValid;
+import com.example.pki.exceptions.PasswordsDoNotMatch;
+import com.example.pki.exceptions.RegistrationTimeExpiredException;
 import com.example.pki.mail.AccountActivationLinkMailFormatter;
 import com.example.pki.mail.MailService;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.Role;
 import com.example.pki.model.User;
-import com.example.pki.model.dto.UserDto;
+import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.service.AuthorityService;
 import com.example.pki.service.RegisterService;
@@ -18,8 +21,6 @@ import org.springframework.stereotype.Service;
 import javax.mail.MessagingException;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class RegisterServiceImpl implements RegisterService {
@@ -27,8 +28,6 @@ public class RegisterServiceImpl implements RegisterService {
     private final UserRepository userRepository;
     private final AuthorityService authService;
     private final PasswordEncoder passwordEncoder;
-    // private static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$";
-    // private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
     private final MailService<String> mailService;
 
     @Autowired
@@ -43,11 +42,7 @@ public class RegisterServiceImpl implements RegisterService {
     }
 
     @Override
-    public NistagramUser register(UserDto dto, String siteURL) throws MessagingException, PasswordIsNotValid {
-
-//        if (!isPasswordValid(dto.getPassword())) {
-//            throw new PasswordIsNotValid();
-//        }
+    public NistagramUser register(RegisterDto dto, String siteURL) throws MessagingException, PasswordIsNotValid {
 
         if (!dto.getPassword().equals(dto.getRepeatedPassword())) {
             throw new PasswordsDoNotMatch();
@@ -55,11 +50,6 @@ public class RegisterServiceImpl implements RegisterService {
 
         NistagramUser user = new NistagramUser();
         List<Role> auth = authService.findByname(user.getAdministrationRole());
-
-//        if (dto.getName().contains("<") || dto.getName().contains(">") || dto.getSurname().contains("<") || dto.getSurname().contains(">")
-//                || dto.getEmail().contains("<") || dto.getEmail().contains(">")) {
-//            throw new InvalidCharacterException();
-//        }
 
         user.setPassword(dto.getPassword());
         user.setEmail(dto.getEmail());
@@ -137,14 +127,6 @@ public class RegisterServiceImpl implements RegisterService {
         String verifyURL = siteUrl + "/activation?code=" + nistagramUser.getActivationCode() + "&email=" + nistagramUser.getEmail();
         mailService.sendMail(nistagramUser.getEmail(), verifyURL, new AccountActivationLinkMailFormatter());
     }
-
-//    private boolean isPasswordValid(final String password) {
-//        if (password.contains(">") || password.contains("<")) {
-//            return false;
-//        }
-//        Matcher matcher = pattern.matcher(password);
-//        return matcher.matches();
-//    }
 
     private boolean isRegistrationTimeValid(Timestamp timestamp) {
         Timestamp timeNow = new Timestamp(System.currentTimeMillis());
