@@ -38,12 +38,7 @@ public class LogInServiceImpl implements LogInService {
 
     @Override
     public UserTokenState logIn(LogInDto authenticationRequest) {
-        Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(),
-                        authenticationRequest.getPassword()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        User user = (User) authentication.getPrincipal();
+        User user = getUser(authenticationRequest);
 
         if (!authenticationRequest.getTwoFactorAuthenticationSecret().equals(user.getTwoFactorAuthSecret())) {
             user.incrementTwoAuthFactorCount();
@@ -68,17 +63,19 @@ public class LogInServiceImpl implements LogInService {
 
     @Override
     public void sendTwoFactorAuthSecret(LogInDto authenticationRequest) throws MessagingException {
+        User user = getUser(authenticationRequest);
+        String secret = Base32.random();
+        user.setTwoFactorAuthSecret(secret);
+        mailService.sendMail(user.getEmail(), secret, new PasswordResetMailFormatter());
+        userRepository.save(user);
+    }
+
+    private User getUser(LogInDto authenticationRequest) {
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(),
                         authenticationRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        User user = (User) authentication.getPrincipal();
-
-        String secret = Base32.random();
-        user.setTwoFactorAuthSecret(secret);
-
-        mailService.sendMail(user.getEmail(), secret, new PasswordResetMailFormatter());
-        userRepository.save(user);
+        return (User) authentication.getPrincipal();
     }
 }

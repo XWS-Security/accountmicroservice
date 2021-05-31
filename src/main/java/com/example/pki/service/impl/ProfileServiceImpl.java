@@ -1,7 +1,8 @@
 package com.example.pki.service.impl;
 
-import com.example.pki.exceptions.BadUserInformationException;
+import com.example.pki.exceptions.EmailAlreadyExistsException;
 import com.example.pki.exceptions.InvalidCharacterException;
+import com.example.pki.exceptions.UsernameAlreadyExistsException;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.UserDto;
@@ -90,7 +91,7 @@ public class ProfileServiceImpl implements ProfileService {
         ArrayList<User> users = (ArrayList<User>) userRepository.findAll();
         users.forEach(user -> {
             if (user.getEmail().equals(email)) {
-                throw new BadUserInformationException();
+                throw new EmailAlreadyExistsException();
             }
         });
         getCurrentlyLoggedUser().setEmail(email);
@@ -100,7 +101,7 @@ public class ProfileServiceImpl implements ProfileService {
         ArrayList<User> users = (ArrayList<User>) userRepository.findAll();
         users.forEach(user -> {
             if (user.getUsername().equals(username)) {
-                throw new BadUserInformationException();
+                throw new UsernameAlreadyExistsException();
             }
         });
         getCurrentlyLoggedUser().setNistagramUsername(username);
