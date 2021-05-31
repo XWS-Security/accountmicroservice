@@ -35,3 +35,6 @@ build/
 
 ### Certificates ###
 data/
+
+### Logs ###
+logs
