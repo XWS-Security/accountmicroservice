@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -40,7 +41,7 @@ public class RegisterController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<String> registerUser(HttpServletRequest request, @RequestBody UserDto dto) {
+    public ResponseEntity<String> registerUser(HttpServletRequest request, @RequestBody @Valid UserDto dto) {
         if (!validUserInfo(dto.getEmail(), dto.getPassword())) {
             return new ResponseEntity<>(missingBasicUserInfoAlert, HttpStatus.BAD_REQUEST);
         }
@@ -63,7 +64,7 @@ public class RegisterController {
     }
 
     @PostMapping("/activate")
-    public ResponseEntity<String> activate(@RequestBody ActivateDto dto) {
+    public ResponseEntity<String> activate(@RequestBody @Valid ActivateDto dto) {
         String email = dto.getEmail();
         String code = dto.getCode();
         try {
@@ -75,7 +76,7 @@ public class RegisterController {
     }
 
     @PostMapping("/password/triggerReset")
-    public ResponseEntity<String> triggerResetPassword(@RequestBody TriggerResetPasswordDto triggerResetPasswordDto) {
+    public ResponseEntity<String> triggerResetPassword(@RequestBody @Valid TriggerResetPasswordDto triggerResetPasswordDto) {
         try {
             passwordResetService.sendPasswordResetCode(triggerResetPasswordDto.getEmail());
             return new ResponseEntity<>(HttpStatus.OK);
@@ -87,7 +88,7 @@ public class RegisterController {
     }
 
     @PostMapping("/password/reset")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
+    public ResponseEntity<String> resetPassword(@RequestBody @Valid ResetPasswordDto resetPasswordDto) {
         try {
             passwordResetService.resetPassword(resetPasswordDto);
             return new ResponseEntity<>(HttpStatus.OK);
@@ -97,7 +98,7 @@ public class RegisterController {
     }
 
     @PostMapping("/password/change")
-    public ResponseEntity<UserTokenState> changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
+    public ResponseEntity<UserTokenState> changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {
         try {
             UserTokenState state = passwordResetService.changePassword(changePasswordDto, getSignedInUser().getEmail());
             return new ResponseEntity<>(state, HttpStatus.OK);

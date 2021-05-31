@@ -1,20 +1,34 @@
 package com.example.pki.model.dto;
 
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 public class LogInDto implements Serializable {
 
+    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
     private String email;
-    private String password;
-    private String oldPassword;
 
-    public LogInDto(String email, String password, String oldPassword) {
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$", message = "Invalid character!")
+    private String password;
+
+    @Pattern(regexp = "^[^<>]*", message = "Invalid character!")
+    private String twoFactorAuthenticationSecret;
+
+    public LogInDto(String email, String password, String twoFactorAuthenticationSecret) {
         this.email = email;
         this.password = password;
-        this.oldPassword = oldPassword;
+        this.twoFactorAuthenticationSecret = twoFactorAuthenticationSecret;
     }
 
     public LogInDto() {
+    }
+
+    public String getTwoFactorAuthenticationSecret() {
+        return twoFactorAuthenticationSecret;
+    }
+
+    public void setTwoFactorAuthenticationSecret(String twoFactorAuthenticationSecret) {
+        this.twoFactorAuthenticationSecret = twoFactorAuthenticationSecret;
     }
 
     public String getEmail() {
@@ -31,13 +45,5 @@ public class LogInDto implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getOldPassword() {
-        return oldPassword;
-    }
-
-    public void setOldPassword(String oldPassword) {
-        this.oldPassword = oldPassword;
     }
 }

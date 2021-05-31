@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -31,7 +32,7 @@ public class ProfileController {
     }
 
     @PutMapping("/updateProfileInfo")
-    public ResponseEntity<String> updateProfileInfo(@RequestBody UserDto userDto) {
+    public ResponseEntity<String> updateProfileInfo(@RequestBody @Valid UserDto userDto) {
         try {
             profileService.updateUserInfo(userDto);
             return new ResponseEntity<>("Profile info successfully updated!", HttpStatus.OK);

@@ -27,8 +27,8 @@ public class RegisterServiceImpl implements RegisterService {
     private final UserRepository userRepository;
     private final AuthorityService authService;
     private final PasswordEncoder passwordEncoder;
-    private static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$";
-    private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
+    // private static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$";
+    // private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
     private final MailService<String> mailService;
 
     @Autowired
@@ -45,9 +45,9 @@ public class RegisterServiceImpl implements RegisterService {
     @Override
     public NistagramUser register(UserDto dto, String siteURL) throws MessagingException, PasswordIsNotValid {
 
-        if (!isPasswordValid(dto.getPassword())) {
-            throw new PasswordIsNotValid();
-        }
+//        if (!isPasswordValid(dto.getPassword())) {
+//            throw new PasswordIsNotValid();
+//        }
 
         if (!dto.getPassword().equals(dto.getRepeatedPassword())) {
             throw new PasswordsDoNotMatch();
@@ -56,10 +56,10 @@ public class RegisterServiceImpl implements RegisterService {
         NistagramUser user = new NistagramUser();
         List<Role> auth = authService.findByname(user.getAdministrationRole());
 
-        if (dto.getName().contains("<") || dto.getName().contains(">") || dto.getSurname().contains("<") || dto.getSurname().contains(">")
-                || dto.getEmail().contains("<") || dto.getEmail().contains(">")) {
-            throw new InvalidCharacterException();
-        }
+//        if (dto.getName().contains("<") || dto.getName().contains(">") || dto.getSurname().contains("<") || dto.getSurname().contains(">")
+//                || dto.getEmail().contains("<") || dto.getEmail().contains(">")) {
+//            throw new InvalidCharacterException();
+//        }
 
         user.setPassword(dto.getPassword());
         user.setEmail(dto.getEmail());
@@ -138,13 +138,13 @@ public class RegisterServiceImpl implements RegisterService {
         mailService.sendMail(nistagramUser.getEmail(), verifyURL, new AccountActivationLinkMailFormatter());
     }
 
-    private boolean isPasswordValid(final String password) {
-        if (password.contains(">") || password.contains("<")) {
-            return false;
-        }
-        Matcher matcher = pattern.matcher(password);
-        return matcher.matches();
-    }
+//    private boolean isPasswordValid(final String password) {
+//        if (password.contains(">") || password.contains("<")) {
+//            return false;
+//        }
+//        Matcher matcher = pattern.matcher(password);
+//        return matcher.matches();
+//    }
 
     private boolean isRegistrationTimeValid(Timestamp timestamp) {
         Timestamp timeNow = new Timestamp(System.currentTimeMillis());

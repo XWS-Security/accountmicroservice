@@ -1,6 +1,7 @@
 package com.example.pki.service.impl;
 
 import com.example.pki.exceptions.BadUserInformationException;
+import com.example.pki.exceptions.InvalidCharacterException;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.UserDto;
@@ -67,6 +68,8 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public List<UserDto> findNistagramUser(String nistagramUsername) {
+        checkForInvalidSigns(nistagramUsername);
+
         ArrayList<NistagramUser> users = (ArrayList<NistagramUser>) nistagramUserRepository.findAll();
         ArrayList<UserDto> userDtos = new ArrayList<>();
 
@@ -101,6 +104,12 @@ public class ProfileServiceImpl implements ProfileService {
             }
         });
         getCurrentlyLoggedUser().setNistagramUsername(username);
+    }
+
+    private void checkForInvalidSigns(String dtoParameter) {
+        if (dtoParameter.contains(">") || dtoParameter.contains("<")) {
+            throw new InvalidCharacterException();
+        }
     }
 
     private boolean checkPassword(String password) {

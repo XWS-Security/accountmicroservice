@@ -1,10 +1,17 @@
 package com.example.pki.model.dto;
 
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 public class ChangePasswordDto implements Serializable {
+
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$", message = "Invalid character!")
     private String newPassword;
+
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$", message = "Invalid character!")
     private String newPasswordRepeated;
+
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$", message = "Invalid character!")
     private String oldPassword;
 
     public ChangePasswordDto() {
