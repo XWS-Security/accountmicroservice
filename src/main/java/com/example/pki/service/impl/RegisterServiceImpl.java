@@ -1,9 +1,6 @@
 package com.example.pki.service.impl;
 
-import com.example.pki.exceptions.BadActivationCodeException;
-import com.example.pki.exceptions.PasswordIsNotValid;
-import com.example.pki.exceptions.PasswordsDoNotMatch;
-import com.example.pki.exceptions.RegistrationTimeExpiredException;
+import com.example.pki.exceptions.*;
 import com.example.pki.mail.AccountActivationLinkMailFormatter;
 import com.example.pki.mail.MailService;
 import com.example.pki.model.NistagramUser;
@@ -68,7 +65,7 @@ public class RegisterServiceImpl implements RegisterService {
         user.setActivationCode(activationCode);
 
         if (userExists(user.getEmail(), user.getUsername())) {
-            throw new RuntimeException();
+            throw new UserAlreadyExistsException();
         }
 
         user = userRepository.save(user);

@@ -2,6 +2,9 @@ package com.example.pki.controller;
 
 import com.example.pki.exceptions.EmailAlreadyExistsException;
 import com.example.pki.exceptions.UsernameAlreadyExistsException;
+import com.example.pki.logging.LoggerService;
+import com.example.pki.logging.LoggerServiceImpl;
+import com.example.pki.model.User;
 import com.example.pki.model.dto.UserDto;
 import com.example.pki.service.ProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -20,6 +24,8 @@ public class ProfileController {
 
     @Qualifier("profileServiceImpl")
     private final ProfileService profileService;
+
+    private final LoggerService loggerService = new LoggerServiceImpl(this.getClass());
 
     @Autowired
     public ProfileController(ProfileService profileService) {
@@ -35,10 +41,15 @@ public class ProfileController {
     public ResponseEntity<String> updateProfileInfo(@RequestBody @Valid UserDto userDto) {
         try {
             profileService.updateUserInfo(userDto);
+            loggerService.logUpdateUserSuccess(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername());
             return new ResponseEntity<>("Profile info successfully updated!", HttpStatus.OK);
+
         } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
+            loggerService.logUpdateUserFailed(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername(), e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+
         } catch (Exception e) {
+            loggerService.logUpdateUserFailed(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername(), e.getMessage());
             return new ResponseEntity<>("Something went wrong!", HttpStatus.BAD_REQUEST);
         }
     }
