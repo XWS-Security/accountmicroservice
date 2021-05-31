@@ -40,11 +40,18 @@ public class CertificateServiceImpl implements CertificateService {
         if (certificateRepository.findByFileName(certificateName) != null) {
             throw new CertificateAlreadyExists();
         }
-        if (dto.getCa() != CA.Root && !isCertificateCA(parentName)) {
-            throw new CertificateIsNotCA();
-        }
-        if (dto.getCa() != CA.Root && !isCertificateValid(parentName)) {
-            throw new CertificateIsNotValid();
+
+        if (dto.getCa() != CA.Root) {
+            X509Certificate parentX509 = keystore.readCertificateFromPfx(parentName);
+            if (!isCertificateCA(parentX509)) {
+                throw new CertificateIsNotCA();
+            }
+            if (!isCertificateValid(parentName)) {
+                throw new CertificateIsNotValid();
+            }
+            Date now = new Date();
+            dto.setStartDate(now);
+            dto.setEndDate(parentX509.getNotAfter());
         }
 
         DataKeyPair pair = generateSubjectDataAndKey(dto);
@@ -94,9 +101,9 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public boolean isCertificateValid(String alias) throws KeystoreErrorException {
-        OCSPCertificate ocspCertificate = certificateRepository.findByFileName(alias);
-        X509Certificate x509Certificate = keystore.readCertificateFromPfx(alias);
+    public boolean isCertificateValid(String fileName) throws KeystoreErrorException {
+        OCSPCertificate ocspCertificate = certificateRepository.findByFileName(fileName);
+        X509Certificate x509Certificate = keystore.readCertificateFromPfx(fileName);
         return !ocspCertificate.isRevoked() && !isCertificateExpired(x509Certificate);
     }
 
@@ -105,9 +112,8 @@ public class CertificateServiceImpl implements CertificateService {
         return today.before(certificate.getNotBefore()) || today.after(certificate.getNotAfter());
     }
 
-    private boolean isCertificateCA(String alias) {
-        X509Certificate parent = keystore.readCertificateFromPfx(alias);
-        return parent.getBasicConstraints() != -1;
+    private boolean isCertificateCA(X509Certificate certificate) {
+        return certificate.getBasicConstraints() != -1;
     }
 
     @Override
