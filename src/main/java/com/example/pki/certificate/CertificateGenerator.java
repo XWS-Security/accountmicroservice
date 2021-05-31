@@ -67,8 +67,8 @@ public class CertificateGenerator {
 
             return certificateConverter.getCertificate(certificateHolder);
         } catch (IllegalArgumentException | IllegalStateException | OperatorCreationException | CertificateException | NoSuchAlgorithmException | CertIOException e) {
-            throw new CouldNotGenerateCertificateException();
             // TODO: log error
+            throw new CouldNotGenerateCertificateException();
         }
     }
 }

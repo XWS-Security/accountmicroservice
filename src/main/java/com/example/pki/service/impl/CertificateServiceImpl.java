@@ -1,12 +1,8 @@
 package com.example.pki.service.impl;
 
-import com.example.pki.certificate.Keystore;
-import com.example.pki.exceptions.CertificateAlreadyExists;
-import com.example.pki.exceptions.CertificateIsNotCA;
-import com.example.pki.exceptions.CertificateIsNotValid;
+import com.example.pki.exceptions.*;
+import com.example.pki.keystore.Keystore;
 import com.example.pki.certificate.CertificateGenerator;
-import com.example.pki.exceptions.CouldNotGenerateCertificateException;
-import com.example.pki.exceptions.CouldNotGenerateKeyPairException;
 import com.example.pki.model.IssuerData;
 import com.example.pki.model.OCSPCertificate;
 import com.example.pki.model.SubjectData;
@@ -37,7 +33,7 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public void generate(CertificateDto dto) throws CouldNotGenerateKeyPairException, CouldNotGenerateCertificateException {
+    public void generate(CertificateDto dto) throws CouldNotGenerateKeyPairException, CouldNotGenerateCertificateException, KeystoreErrorException {
         String certificateName = dto.getCertificateName();
         String parentName = dto.getParentName();
 
@@ -98,7 +94,7 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public boolean isCertificateValid(String alias) {
+    public boolean isCertificateValid(String alias) throws KeystoreErrorException {
         OCSPCertificate ocspCertificate = certificateRepository.findByFileName(alias);
         X509Certificate x509Certificate = keystore.readCertificateFromPfx(alias);
         return !ocspCertificate.isRevoked() && !isCertificateExpired(x509Certificate);
@@ -115,7 +111,7 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public List<CertificateDto> getCertificates(boolean onlyCA) {
+    public List<CertificateDto> getCertificates(boolean onlyCA) throws KeystoreErrorException {
         List<OCSPCertificate> ocspCertificates = (List<OCSPCertificate>) certificateRepository.findAll();
         List<CertificateDto> certificateDtos = new ArrayList<>();
 

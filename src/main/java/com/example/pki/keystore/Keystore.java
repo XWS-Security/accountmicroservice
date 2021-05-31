@@ -1,7 +1,5 @@
-package com.example.pki.certificate;
+package com.example.pki.keystore;
 
-import com.example.pki.keystore.KeyStoreReader;
-import com.example.pki.keystore.KeyStoreWriter;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import java.io.FileWriter;

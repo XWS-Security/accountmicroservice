@@ -1,5 +1,7 @@
 package com.example.pki.keystore;
 
+import com.example.pki.exceptions.KeystoreErrorException;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -19,10 +21,9 @@ public class KeyStoreWriter {
     public KeyStoreWriter() {
         try {
             keyStore = KeyStore.getInstance("PKCS12", "SUN");
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (NoSuchProviderException e) {
-            e.printStackTrace();
+        } catch (KeyStoreException | NoSuchProviderException e) {
+            // TODO: log error
+            throw new KeystoreErrorException();
         }
     }
 
@@ -33,30 +34,18 @@ public class KeyStoreWriter {
             } else {
                 keyStore.load(null, password);
             }
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (NoSuchAlgorithmException | CertificateException | IOException e) {
+            // TODO: log error
+            throw new KeystoreErrorException();
         }
     }
 
     public void saveKeyStore(String fileName, char[] password) { //Keystore
         try {
             keyStore.store(new FileOutputStream(fileName), password);
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
+            // TODO: log error
+            throw new KeystoreErrorException();
         }
     }
 
@@ -64,7 +53,8 @@ public class KeyStoreWriter {
         try {
             keyStore.setKeyEntry(alias, privateKey, password, new Certificate[]{certificate});
         } catch (KeyStoreException e) {
-            e.printStackTrace();
+            // TODO: log error
+            throw new KeystoreErrorException();
         }
     }
 }
