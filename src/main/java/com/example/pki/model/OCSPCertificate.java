@@ -54,10 +54,6 @@ public class OCSPCertificate {
         return revoked;
     }
 
-    public Boolean getRevoked() {
-        return revoked;
-    }
-
     public void setRevoked(boolean revoked) {
         this.revoked = revoked;
     }

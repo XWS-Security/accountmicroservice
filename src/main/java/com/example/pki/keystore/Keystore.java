@@ -1,5 +1,6 @@
 package com.example.pki.keystore;
 
+import com.example.pki.exceptions.KeystoreErrorException;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import java.io.FileWriter;
@@ -42,7 +43,8 @@ public class Keystore {
         try (JcaPEMWriter pemWriter = new JcaPEMWriter(new FileWriter(fileName))) {
             pemWriter.writeObject(object);
         } catch (IOException e) {
-            e.printStackTrace();
+            // TODO: log error
+            throw new KeystoreErrorException();
         }
     }
 }
