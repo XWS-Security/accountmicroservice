@@ -41,6 +41,24 @@ services:
     depends_on: 
       - neo4j
       
+  contentmicroservice:
+    build:
+      context: contentmicroservice/.
+      dockerfile: Dockerfile
+      args:
+        STAGE: ${STAGE:-dev}
+      target: ${TARGET:-appWebServerRuntime}
+    image: lukadoric/contentmicroservice
+    container_name: contentmicroservice
+    restart: on-failure
+    networks:
+      - nistagram-network
+    environment:
+      NEO4J_DRIVER_URI: bolt://neo4j:7687
+      NEO4J_PASSWORD: super
+    depends_on: 
+      - neo4j
+      
   neo4j:
     image: neo4j:4.1.3
     container_name: neo4j
