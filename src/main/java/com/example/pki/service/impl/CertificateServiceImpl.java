@@ -67,7 +67,7 @@ public class CertificateServiceImpl implements CertificateService {
                 X509Certificate certificate = certificateGenerator.generateCertificate(subjectData, issuerData, true);
                 writer.loadKeyStore(null, KEY_STORE_PASS.toCharArray());
                 writer.write(certificateName, issuerData.getPrivateKey(), PASS.toCharArray(), certificate);
-                writer.saveKeyStore("data/" + certificateName, KEY_STORE_PASS.toCharArray());
+                writer.saveKeyStore("data/" + certificateName + ".pem", KEY_STORE_PASS.toCharArray());
                 OCSPCertificate ocspCertificate = new OCSPCertificate(certificateName, null);
                 certificateRepository.save(ocspCertificate);
                 break;
