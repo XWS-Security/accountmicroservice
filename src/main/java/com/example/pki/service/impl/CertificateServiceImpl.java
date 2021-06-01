@@ -10,12 +10,14 @@ import com.example.pki.model.dto.CertificateDto;
 import com.example.pki.model.enums.CA;
 import com.example.pki.repository.CertificateRepository;
 import com.example.pki.service.CertificateService;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.*;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,8 +43,9 @@ public class CertificateServiceImpl implements CertificateService {
             throw new CertificateAlreadyExists();
         }
 
+        X509Certificate parentX509 = null;
         if (dto.getCa() != CA.Root) {
-            X509Certificate parentX509 = keystore.readCertificateFromPfx(parentName);
+            parentX509 = keystore.readCertificateFromPfx(parentName);
             if (!isCertificateCA(parentX509)) {
                 throw new CertificateIsNotCA();
             }
@@ -70,23 +73,23 @@ public class CertificateServiceImpl implements CertificateService {
 
             case Intermediate:
                 PrivateKey parentKey = keystore.readPrivateKeyFromPfx(parentName);
-                issuerData = generateIssuerData(parentKey, parentName);
+                issuerData = generateIssuerData(parentKey, parentX509);
                 issuerOCSP = certificateRepository.findByFileName(parentName);
                 isCA = true;
                 break;
 
             default: // End-entity
                 PrivateKey parentKeyEnd = keystore.readPrivateKeyFromPfx(parentName);
-                issuerData = generateIssuerData(parentKeyEnd, parentName);
+                issuerData = generateIssuerData(parentKeyEnd, parentX509);
                 issuerOCSP = certificateRepository.findByFileName(parentName);
                 isCA = false;
         }
 
         // Generate certificate
         CertificateGenerator certificateGenerator = new CertificateGenerator();
-        X509Certificate certificate = certificateGenerator.generateCertificate(subjectData, issuerData, isCA);
+        X509Certificate certificate = certificateGenerator.generateCertificate(subjectData, issuerData, parentX509, isCA);
         // Save to keystore
-        keystore.saveCertAsPfx(certificate, certificateName, issuerData.getPrivateKey());
+        keystore.saveCertAsPfx(certificate, certificateName, pair.privateKey);
         // Save OCSP data in database
         saveOCSPData(certificateName, issuerOCSP);
         // Save in pem format to use in front app
@@ -168,10 +171,9 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
-    private IssuerData generateIssuerData(PrivateKey issuerKey, String parent) {
-        X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-        builder.addRDN(BCStyle.CN, parent);
-        return new IssuerData(issuerKey, builder.build());
+    private IssuerData generateIssuerData(PrivateKey issuerKey, X509Certificate issuer) {
+        X500Name issuerName = X500Name.getInstance(issuer.getSubjectX500Principal().getEncoded());
+        return new IssuerData(issuerKey, issuerName);
     }
 
     private DataKeyPair generateSubjectDataAndKey(CertificateDto dto) throws CouldNotGenerateKeyPairException {
