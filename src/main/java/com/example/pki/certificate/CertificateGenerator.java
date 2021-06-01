@@ -29,7 +29,7 @@ public class CertificateGenerator {
     public CertificateGenerator() {
     }
 
-    public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, boolean isCertificateCA) throws CouldNotGenerateCertificateException {
+    public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, X509Certificate issuerCertificate, boolean isCertificateCA) throws CouldNotGenerateCertificateException {
         try {
             // Create content signer
             JcaContentSignerBuilder contentSignerBuilder = new JcaContentSignerBuilder("SHA256WithRSAEncryption");
@@ -45,11 +45,12 @@ public class CertificateGenerator {
                     subjectData.getPublicKey());
 
             // Add extensions for CA
-            if (isCertificateCA) {
-                JcaX509ExtensionUtils rootCertExtUtils = new JcaX509ExtensionUtils();
-                certificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
-                certificateBuilder.addExtension(Extension.subjectKeyIdentifier, false, rootCertExtUtils.createSubjectKeyIdentifier(subjectData.getPublicKey()));
+            JcaX509ExtensionUtils rootCertExtUtils = new JcaX509ExtensionUtils();
+            certificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(isCertificateCA));
+            if (issuerCertificate != null) {
+                certificateBuilder.addExtension(Extension.authorityKeyIdentifier, false, rootCertExtUtils.createAuthorityKeyIdentifier(issuerCertificate));
             }
+            certificateBuilder.addExtension(Extension.subjectKeyIdentifier, false, rootCertExtUtils.createSubjectKeyIdentifier(subjectData.getPublicKey()));
 
             // Extensions for localhost
             DERSequence subjectAlternativeNames = new DERSequence(new ASN1Encodable[]{
