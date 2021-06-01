@@ -29,9 +29,10 @@ public class UserDto implements Serializable {
     @Pattern(regexp = "^[0-9]*", message = "Invalid character!")
     private String phoneNumber;
 
-
     @Pattern(regexp = "^[^<>]*", message = "Invalid character!")
     private String about;
+
+    private Date dateOfBirth;
 
     public UserDto() {
 
@@ -45,6 +46,7 @@ public class UserDto implements Serializable {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.about = about;
+        this.dateOfBirth = dateOfBirth;
     }
 
     public static UserDto convertUserToDto(NistagramUser user) {
@@ -98,5 +100,13 @@ public class UserDto implements Serializable {
 
     public void setSurname(String surname) {
         this.surname = surname;
+    }
+
+    public Date getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 }
