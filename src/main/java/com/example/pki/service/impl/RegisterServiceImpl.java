@@ -10,18 +10,21 @@ import com.example.pki.model.dto.FollowerMicroserviceUserDto;
 import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.service.AuthorityService;
+import com.example.pki.service.CertificateService;
 import com.example.pki.service.RegisterService;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import javax.mail.MessagingException;
+import javax.net.ssl.SSLException;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -32,6 +35,7 @@ public class RegisterServiceImpl implements RegisterService {
     private final AuthorityService authService;
     private final PasswordEncoder passwordEncoder;
     private final MailService<String> mailService;
+    private final CertificateService certificateService;
 
     @Value("${CONTENT}")
     private String contentMicroserviceURI;
@@ -43,15 +47,16 @@ public class RegisterServiceImpl implements RegisterService {
     public RegisterServiceImpl(UserRepository userRepository,
                                AuthorityService authService,
                                PasswordEncoder passwordEncoder,
-                               MailService<String> mailService) {
+                               MailService<String> mailService, CertificateService certificateService) {
         this.userRepository = userRepository;
         this.authService = authService;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
+        this.certificateService = certificateService;
     }
 
     @Override
-    public NistagramUser register(RegisterDto dto, String siteURL) throws MessagingException, PasswordIsNotValid {
+    public NistagramUser register(RegisterDto dto, String siteURL) throws MessagingException, PasswordIsNotValid, SSLException {
 
         if (!dto.getPassword().equals(dto.getRepeatedPassword())) {
             throw new PasswordsDoNotMatch();
@@ -151,9 +156,10 @@ public class RegisterServiceImpl implements RegisterService {
         return minutes < 1;
     }
 
-    private void createUserInFollowerMicroservices(FollowerMicroserviceUserDto followerMicroserviceUserDto) {
+    private void createUserInFollowerMicroservices(FollowerMicroserviceUserDto followerMicroserviceUserDto) throws SSLException {
         WebClient client = WebClient.builder()
                 .baseUrl(followerMicroserviceURI)
+                .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
 
         client.post()
@@ -165,9 +171,10 @@ public class RegisterServiceImpl implements RegisterService {
 
     }
 
-    private void createUserInContentMicroservices(FollowerMicroserviceUserDto followerMicroserviceUserDto) {
+    private void createUserInContentMicroservices(FollowerMicroserviceUserDto followerMicroserviceUserDto) throws SSLException {
         WebClient client = WebClient.builder()
                 .baseUrl(contentMicroserviceURI)
+                .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
 
         client.post()

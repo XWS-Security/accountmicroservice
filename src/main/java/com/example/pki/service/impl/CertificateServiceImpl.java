@@ -10,12 +10,16 @@ import com.example.pki.model.dto.CertificateDto;
 import com.example.pki.model.enums.CA;
 import com.example.pki.repository.CertificateRepository;
 import com.example.pki.service.CertificateService;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.netty.http.client.HttpClient;
 
+import javax.net.ssl.SSLException;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -146,6 +150,15 @@ public class CertificateServiceImpl implements CertificateService {
         });
 
         return certificateDtos;
+    }
+
+    @Override
+    public HttpClient buildHttpClient() throws SSLException {
+        SslContext sslContext = SslContextBuilder
+                .forClient()
+                .trustManager(keystore.readCertificateFromPfx("root"))
+                .build();
+        return HttpClient.create().secure(t -> t.sslContext(sslContext));
     }
 
     private CertificateDto createCertificateDto(OCSPCertificate ocspCertificate, X509Certificate certificate) {
