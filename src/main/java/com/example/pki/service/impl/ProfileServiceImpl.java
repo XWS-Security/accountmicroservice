@@ -10,17 +10,20 @@ import com.example.pki.model.dto.FollowerMicroserviceUserDto;
 import com.example.pki.model.dto.UserDto;
 import com.example.pki.repository.NistagramUserRepository;
 import com.example.pki.repository.UserRepository;
+import com.example.pki.service.CertificateService;
 import com.example.pki.service.ProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import javax.net.ssl.SSLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +33,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final UserRepository userRepository;
     private final NistagramUserRepository nistagramUserRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CertificateService certificateService;
 
     @Value("${CONTENT}")
     private String contentMicroserviceURI;
@@ -39,10 +43,11 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Autowired
     public ProfileServiceImpl(UserRepository userRepository, NistagramUserRepository nistagramUserRepository,
-                              PasswordEncoder passwordEncoder) {
+                              PasswordEncoder passwordEncoder, CertificateService certificateService) {
         this.userRepository = userRepository;
         this.nistagramUserRepository = nistagramUserRepository;
         this.passwordEncoder = passwordEncoder;
+        this.certificateService = certificateService;
     }
 
     @Override
@@ -51,7 +56,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public void updateUserInfo(UserDto userDto) {
+    public void updateUserInfo(UserDto userDto) throws SSLException {
         NistagramUser currentlyLoggedUser = getCurrentlyLoggedUser();
 
         FollowerMicroserviceUpdateUserDto followerMicroserviceUpdateUserDto =
@@ -122,9 +127,10 @@ public class ProfileServiceImpl implements ProfileService {
         return userDtos;
     }
 
-    private void updateUserInfoInFollowerMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto) {
+    private void updateUserInfoInFollowerMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto) throws SSLException {
         WebClient client = WebClient.builder()
                 .baseUrl(followerMicroserviceURI)
+                .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
 
         client.put()
@@ -136,9 +142,10 @@ public class ProfileServiceImpl implements ProfileService {
                 .subscribe();
     }
 
-    private void updateUserInfoInContentMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto) {
+    private void updateUserInfoInContentMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto) throws SSLException {
         WebClient client = WebClient.builder()
                 .baseUrl(contentMicroserviceURI)
+                .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
 
         client.put()

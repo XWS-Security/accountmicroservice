@@ -1,7 +1,9 @@
 package com.example.pki.service;
 
 import com.example.pki.model.dto.CertificateDto;
+import reactor.netty.http.client.HttpClient;
 
+import javax.net.ssl.SSLException;
 import java.util.List;
 
 public interface CertificateService {
@@ -12,4 +14,6 @@ public interface CertificateService {
     boolean isCertificateValid(String certificateAlias);
 
     List<CertificateDto> getCertificates(boolean onlyCA);
+
+    HttpClient buildHttpClient() throws SSLException;
 }

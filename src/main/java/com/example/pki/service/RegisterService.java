@@ -6,12 +6,13 @@ import com.example.pki.model.User;
 import com.example.pki.model.dto.RegisterDto;
 
 import javax.mail.MessagingException;
+import javax.net.ssl.SSLException;
 
 public interface RegisterService {
 
     User activate(String email, String activationCode) throws BadActivationCodeException;
 
-    User register(RegisterDto registerDto, String siteURL) throws MessagingException;
+    User register(RegisterDto registerDto, String siteURL) throws MessagingException, SSLException;
 
     NistagramUser findByEmail(String email);
 
