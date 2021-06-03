@@ -45,12 +45,14 @@ public class RegisterDto {
     @Pattern(regexp = "^[^<>]*", message = "Invalid character!")
     private String about;
 
+    private boolean profilePrivate;
+
     public RegisterDto() {
 
     }
 
     public RegisterDto(String name, String surname, String email, String password, String repeatedPassword, String username,
-                   Gender gender, Date dateOfBirth, String phoneNumber, String about) {
+                   Gender gender, Date dateOfBirth, String phoneNumber, String about, boolean profilePrivate) {
         this.username = username;
         this.name = name;
         this.surname = surname;
@@ -61,10 +63,11 @@ public class RegisterDto {
         this.dateOfBirth = dateOfBirth;
         this.phoneNumber = phoneNumber;
         this.about = about;
+        this.profilePrivate = profilePrivate;
     }
 
     public RegisterDto(String name, String surname, String email, String username,
-                   Gender gender, Date dateOfBirth, String phoneNumber, String about) {
+                   Gender gender, Date dateOfBirth, String phoneNumber, String about, boolean profilePrivate) {
         this.username = username;
         this.name = name;
         this.surname = surname;
@@ -73,11 +76,12 @@ public class RegisterDto {
         this.dateOfBirth = dateOfBirth;
         this.phoneNumber = phoneNumber;
         this.about = about;
+        this.profilePrivate = profilePrivate;
     }
 
     public static UserDto convertUserToDto(NistagramUser user) {
         return new UserDto(user.getName(), user.getSurname(), user.getEmail(), user.getNistagramUsername(),
-                user.getGender(), user.getDateOfBirth(), user.getPhoneNumber(), user.getAbout());
+                user.getGender(), user.getDateOfBirth(), user.getPhoneNumber(), user.getAbout(), user.isProfilePrivate());
     }
 
     public Date getDateOfBirth() {
@@ -158,5 +162,13 @@ public class RegisterDto {
 
     public void setSurname(String surname) {
         this.surname = surname;
+    }
+
+    public boolean isProfilePrivate() {
+        return profilePrivate;
+    }
+
+    public void setProfilePrivate(boolean profilePrivate) {
+        this.profilePrivate = profilePrivate;
     }
 }

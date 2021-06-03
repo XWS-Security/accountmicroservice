@@ -34,12 +34,14 @@ public class UserDto implements Serializable {
 
     private Date dateOfBirth;
 
+    private boolean profilePrivate;
+
     public UserDto() {
 
     }
 
     public UserDto(String name, String surname, String email, String username,
-                   Gender gender, Date dateOfBirth, String phoneNumber, String about) {
+                   Gender gender, Date dateOfBirth, String phoneNumber, String about, boolean profilePrivate) {
         this.username = username;
         this.name = name;
         this.surname = surname;
@@ -47,11 +49,12 @@ public class UserDto implements Serializable {
         this.phoneNumber = phoneNumber;
         this.about = about;
         this.dateOfBirth = dateOfBirth;
+        this.profilePrivate = profilePrivate;
     }
 
     public static UserDto convertUserToDto(NistagramUser user) {
         return new UserDto(user.getName(), user.getSurname(), user.getEmail(), user.getNistagramUsername(),
-                user.getGender(), user.getDateOfBirth(), user.getPhoneNumber(), user.getAbout());
+                user.getGender(), user.getDateOfBirth(), user.getPhoneNumber(), user.getAbout(), user.isProfilePrivate());
     }
 
     public String getAbout() {
@@ -108,5 +111,13 @@ public class UserDto implements Serializable {
 
     public void setDateOfBirth(Date dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public boolean isProfilePrivate() {
+        return profilePrivate;
+    }
+
+    public void setProfilePrivate(boolean profilePrivate) {
+        this.profilePrivate = profilePrivate;
     }
 }

@@ -31,6 +31,9 @@ public class NistagramUser extends User {
     @Column(name = "about")
     private String about;
 
+    @Column(name = "profilePrivate")
+    private Boolean profilePrivate;
+
     @Override
     public String getAdministrationRole() {
         return administrationRole;
@@ -82,6 +85,14 @@ public class NistagramUser extends User {
 
     public Timestamp getRegistrationSentDate() {
         return registrationSentDate;
+    }
+
+    public boolean isProfilePrivate() {
+        return profilePrivate;
+    }
+
+    public void setProfilePrivate(boolean profilePrivate) {
+        this.profilePrivate = profilePrivate;
     }
 }
 
