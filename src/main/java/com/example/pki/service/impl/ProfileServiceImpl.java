@@ -5,14 +5,21 @@ import com.example.pki.exceptions.InvalidCharacterException;
 import com.example.pki.exceptions.UsernameAlreadyExistsException;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.User;
+import com.example.pki.model.dto.FollowerMicroserviceUpdateUserDto;
+import com.example.pki.model.dto.FollowerMicroserviceUserDto;
 import com.example.pki.model.dto.UserDto;
 import com.example.pki.repository.NistagramUserRepository;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.service.ProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +30,12 @@ public class ProfileServiceImpl implements ProfileService {
     private final UserRepository userRepository;
     private final NistagramUserRepository nistagramUserRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${CONTENT}")
+    private String contentMicroserviceURI;
+
+    @Value("${FOLLOWER}")
+    private String followerMicroserviceURI;
 
     @Autowired
     public ProfileServiceImpl(UserRepository userRepository, NistagramUserRepository nistagramUserRepository,
@@ -41,10 +54,14 @@ public class ProfileServiceImpl implements ProfileService {
     public void updateUserInfo(UserDto userDto) {
         NistagramUser currentlyLoggedUser = getCurrentlyLoggedUser();
 
+        FollowerMicroserviceUpdateUserDto followerMicroserviceUpdateUserDto =
+                new FollowerMicroserviceUpdateUserDto(currentlyLoggedUser.getNistagramUsername(), userDto.getUsername(), userDto.isProfilePrivate());
+
         currentlyLoggedUser.setAbout(userDto.getAbout());
         currentlyLoggedUser.setName(userDto.getName());
         currentlyLoggedUser.setSurname(userDto.getSurname());
         currentlyLoggedUser.setPhoneNumber(userDto.getPhoneNumber());
+        currentlyLoggedUser.setProfilePrivate(userDto.isProfilePrivate());
 
         if (!userDto.getUsername().equals(currentlyLoggedUser.getUsername())) {
             setUsername(userDto.getUsername());
@@ -54,17 +71,32 @@ public class ProfileServiceImpl implements ProfileService {
             setUserEmail(userDto.getEmail());
         }
 
+        updateUserInfoInContentMicroservice(followerMicroserviceUpdateUserDto);
+        updateUserInfoInFollowerMicroservice(followerMicroserviceUpdateUserDto);
+
         userRepository.save(currentlyLoggedUser);
     }
 
     @Override
     public List<UserDto> findAllNistagramUsers() {
-        ArrayList<UserDto> usersDto = new ArrayList<>();
-        ArrayList<NistagramUser> users = (ArrayList<NistagramUser>) nistagramUserRepository.findAll();
-        users.forEach(user -> {
-            usersDto.add(UserDto.convertUserToDto(user));
-        });
-        return usersDto;
+
+        if (getCurrentlyLoggedUser() != null) {
+            ArrayList<UserDto> usersDto = new ArrayList<>();
+            ArrayList<NistagramUser> users = (ArrayList<NistagramUser>) nistagramUserRepository.findAll();
+            users.forEach(user -> {
+                usersDto.add(UserDto.convertUserToDto(user));
+            });
+            return usersDto;
+        } else {
+            ArrayList<UserDto> usersDto = new ArrayList<>();
+            ArrayList<NistagramUser> users = (ArrayList<NistagramUser>) nistagramUserRepository.findAll();
+            users.forEach(user -> {
+                if (!user.isProfilePrivate()) {
+                    usersDto.add(UserDto.convertUserToDto(user));
+                }
+            });
+            return usersDto;
+        }
     }
 
     @Override
@@ -74,17 +106,56 @@ public class ProfileServiceImpl implements ProfileService {
         ArrayList<NistagramUser> users = (ArrayList<NistagramUser>) nistagramUserRepository.findAll();
         ArrayList<UserDto> userDtos = new ArrayList<>();
 
-        users.forEach(user -> {
-            if (user.getNistagramUsername().contains(nistagramUsername)) {
-                userDtos.add(UserDto.convertUserToDto(user));
-            }
-        });
+        if (getCurrentlyLoggedUser() != null) {
+            users.forEach(user -> {
+                if (user.getNistagramUsername().contains(nistagramUsername)) {
+                    userDtos.add(UserDto.convertUserToDto(user));
+                }
+            });
+        } else {
+            users.forEach(user -> {
+                if (user.getNistagramUsername().contains(nistagramUsername) && !user.isProfilePrivate()) {
+                    userDtos.add(UserDto.convertUserToDto(user));
+                }
+            });
+        }
         return userDtos;
     }
 
+    private void updateUserInfoInFollowerMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto) {
+        WebClient client = WebClient.builder()
+                .baseUrl(followerMicroserviceURI)
+                .build();
+
+        client.put()
+                .uri("/users")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(Mono.just(followerMicroserviceUserDto), FollowerMicroserviceUserDto.class)
+                .retrieve()
+                .bodyToFlux(String.class)
+                .subscribe();
+    }
+
+    private void updateUserInfoInContentMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto) {
+        WebClient client = WebClient.builder()
+                .baseUrl(contentMicroserviceURI)
+                .build();
+
+        client.put()
+                .uri("/profile/updateUser")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(Mono.just(followerMicroserviceUserDto), FollowerMicroserviceUserDto.class)
+                .retrieve()
+                .bodyToFlux(String.class)
+                .subscribe();
+    }
 
     private NistagramUser getCurrentlyLoggedUser() {
-        return (NistagramUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString().equals("anonymousUser")) {
+            return null;
+        } else {
+            return (NistagramUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        }
     }
 
     private void setUserEmail(String email) {

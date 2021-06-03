@@ -6,14 +6,20 @@ import com.example.pki.mail.MailService;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.Role;
 import com.example.pki.model.User;
+import com.example.pki.model.dto.FollowerMicroserviceUserDto;
 import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.service.AuthorityService;
 import com.example.pki.service.RegisterService;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import javax.mail.MessagingException;
 import java.sql.Timestamp;
@@ -26,6 +32,12 @@ public class RegisterServiceImpl implements RegisterService {
     private final AuthorityService authService;
     private final PasswordEncoder passwordEncoder;
     private final MailService<String> mailService;
+
+    @Value("${CONTENT}")
+    private String contentMicroserviceURI;
+
+    @Value("${FOLLOWER}")
+    private String followerMicroserviceURI;
 
     @Autowired
     public RegisterServiceImpl(UserRepository userRepository,
@@ -60,6 +72,7 @@ public class RegisterServiceImpl implements RegisterService {
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setAbout(dto.getAbout());
+        user.setProfilePrivate(dto.isProfilePrivate());
 
         String activationCode = RandomString.make(64);
         user.setActivationCode(activationCode);
@@ -69,6 +82,11 @@ public class RegisterServiceImpl implements RegisterService {
         }
 
         user = userRepository.save(user);
+
+        FollowerMicroserviceUserDto followerMicroserviceUserDto = new FollowerMicroserviceUserDto(dto.getUsername(), dto.isProfilePrivate());
+        createUserInFollowerMicroservices(followerMicroserviceUserDto);
+        createUserInContentMicroservices(followerMicroserviceUserDto);
+
         sendActivationLink(user, siteURL);
         return user;
     }
@@ -131,5 +149,33 @@ public class RegisterServiceImpl implements RegisterService {
         int seconds = (int) milliseconds / 1000;
         int minutes = (seconds % 3600) / 60;
         return minutes < 1;
+    }
+
+    private void createUserInFollowerMicroservices(FollowerMicroserviceUserDto followerMicroserviceUserDto) {
+        WebClient client = WebClient.builder()
+                .baseUrl(followerMicroserviceURI)
+                .build();
+
+        client.post()
+                .uri("/users")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(Mono.just(followerMicroserviceUserDto), FollowerMicroserviceUserDto.class)
+                .retrieve()
+                .bodyToFlux(String.class).subscribe();
+
+    }
+
+    private void createUserInContentMicroservices(FollowerMicroserviceUserDto followerMicroserviceUserDto) {
+        WebClient client = WebClient.builder()
+                .baseUrl(contentMicroserviceURI)
+                .build();
+
+        client.post()
+                .uri("/profile/createNistagramUser")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(Mono.just(followerMicroserviceUserDto), FollowerMicroserviceUserDto.class)
+                .retrieve()
+                .bodyToFlux(String.class).subscribe();
+
     }
 }
