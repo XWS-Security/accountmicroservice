@@ -14,11 +14,10 @@ import java.util.Date;
 @Component
 public class TokenUtils {
 
-    @Value("pharmacy")
+    @Value("nistagram")
     private String APP_NAME;
 
-    //TODO: Secret shouldn be stored here
-    @Value("somesecret")
+    @Value("${SECRET}")
     public String SECRET;
 
     @Value("700000")
@@ -32,7 +31,7 @@ public class TokenUtils {
     private static final String AUDIENCE_MOBILE = "mobile";
     private static final String AUDIENCE_TABLET = "tablet";
 
-    private SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
+    private final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
 
     public String generateToken(String username) {
         return Jwts.builder()
