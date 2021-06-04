@@ -210,7 +210,7 @@ public abstract class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return nistagramUsername;
     }
 
     @JsonIgnore

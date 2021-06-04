@@ -54,8 +54,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .cors().and().csrf().disable()
+                // Set session management to stateless
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                // Set unauthorized requests exception handler
                 .exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint).and()
+                // Set permissions on endpoints
                 .authorizeRequests()
                 .antMatchers("/register/**").permitAll()
                 .antMatchers("/login/**").permitAll()
@@ -67,10 +71,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/profile/getUserInfo").hasAuthority("NISTAGRAM_USER_PRIVILEGE")
                 .antMatchers("/certificate/**").hasAuthority("CERTIFICATE")
                 .anyRequest().authenticated().and()
-                .cors().and()
+                // Add JWT token filter
                 .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),
                         BasicAuthenticationFilter.class);
-        http.csrf().disable();
 
         // Enables SSL
         http.requiresChannel().anyRequest().requiresSecure();

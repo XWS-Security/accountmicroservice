@@ -82,12 +82,12 @@ public class LoggerServiceImpl implements LoggerService {
 
     @Override
     public void loginSuccess(String email) {
-        logger.info("Login successful: { 'email': {}, }", email);
+        logger.info("Login successful: { 'username': {}, }", email);
     }
 
     @Override
     public void loginFailed(String email, String reason) {
-        logger.error("Login failed: { 'email': {}, 'reason': {} }", email, reason);
+        logger.error("Login failed: { 'username': {}, 'reason': {} }", email, reason);
     }
 
     @Override
