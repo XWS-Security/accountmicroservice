@@ -131,7 +131,7 @@ public class ProfileServiceImpl implements ProfileService {
     private void updateUserInfoInFollowerMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto) throws SSLException {
         WebClient client = WebClient.builder()
                 .baseUrl(followerMicroserviceURI)
-                .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
+            //    .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
 
         client.put()
@@ -146,7 +146,7 @@ public class ProfileServiceImpl implements ProfileService {
     private void updateUserInfoInContentMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto) throws SSLException {
         WebClient client = WebClient.builder()
                 .baseUrl(contentMicroserviceURI)
-                .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
+            //    .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
 
         client.put()
