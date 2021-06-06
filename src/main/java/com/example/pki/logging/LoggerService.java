@@ -3,6 +3,8 @@ package com.example.pki.logging;
 public interface LoggerService {
     void logException(String message);
 
+    void logTokenException(String message);
+
     void logCreateUser(String username);
 
     void logCreateUserSuccess(String username);

@@ -1,5 +1,6 @@
 package com.example.pki.security;
 
+import com.example.pki.logging.*;
 import com.example.pki.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -33,6 +34,8 @@ public class TokenUtils {
 
     private final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
 
+    private final LoggerService loggerService = new LoggerServiceImpl(this.getClass());
+
     public String generateToken(String username) {
         return Jwts.builder()
                 .setIssuer(APP_NAME)
@@ -61,6 +64,7 @@ public class TokenUtils {
                     .setExpiration(generateExpirationDate())
                     .signWith(SIGNATURE_ALGORITHM, SECRET).compact();
         } catch (Exception e) {
+            loggerService.logTokenException(e.getMessage());
             refreshedToken = null;
         }
         return refreshedToken;
@@ -87,6 +91,7 @@ public class TokenUtils {
             final Claims claims = this.getAllClaimsFromToken(token);
             username = claims.getSubject();
         } catch (Exception e) {
+            loggerService.logTokenException(e.getMessage());
             username = null;
         }
         return username;
@@ -98,6 +103,7 @@ public class TokenUtils {
             final Claims claims = this.getAllClaimsFromToken(token);
             issueAt = claims.getIssuedAt();
         } catch (Exception e) {
+            loggerService.logTokenException(e.getMessage());
             issueAt = null;
         }
         return issueAt;
@@ -109,6 +115,7 @@ public class TokenUtils {
             final Claims claims = this.getAllClaimsFromToken(token);
             audience = claims.getAudience();
         } catch (Exception e) {
+            loggerService.logTokenException(e.getMessage());
             audience = null;
         }
         return audience;
@@ -120,6 +127,7 @@ public class TokenUtils {
             final Claims claims = this.getAllClaimsFromToken(token);
             expiration = claims.getExpiration();
         } catch (Exception e) {
+            loggerService.logTokenException(e.getMessage());
             expiration = null;
         }
         return expiration;
@@ -165,6 +173,7 @@ public class TokenUtils {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
+            loggerService.logTokenException(e.getMessage());
             claims = null;
         }
         return claims;
