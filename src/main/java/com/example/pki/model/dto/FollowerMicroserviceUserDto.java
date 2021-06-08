@@ -5,14 +5,16 @@ import java.io.Serializable;
 public class FollowerMicroserviceUserDto implements Serializable {
     private String username;
     private boolean profilePrivate = false;
+    private String about;
 
     public FollowerMicroserviceUserDto() {
 
     }
 
-    public FollowerMicroserviceUserDto(String username, boolean profilePrivate) {
+    public FollowerMicroserviceUserDto(String username, boolean profilePrivate, String about) {
         this.username = username;
         this.profilePrivate = profilePrivate;
+        this.about = about;
     }
 
     public String getUsername() {
@@ -29,5 +31,13 @@ public class FollowerMicroserviceUserDto implements Serializable {
 
     public void setProfilePrivate(boolean profilePrivate) {
         this.profilePrivate = profilePrivate;
+    }
+
+    public String getAbout() {
+        return about;
+    }
+
+    public void setAbout(String about) {
+        this.about = about;
     }
 }

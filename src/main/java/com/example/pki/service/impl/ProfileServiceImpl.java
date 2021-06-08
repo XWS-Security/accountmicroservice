@@ -60,7 +60,8 @@ public class ProfileServiceImpl implements ProfileService {
         NistagramUser currentlyLoggedUser = getCurrentlyLoggedUser();
 
         FollowerMicroserviceUpdateUserDto followerMicroserviceUpdateUserDto =
-                new FollowerMicroserviceUpdateUserDto(currentlyLoggedUser.getNistagramUsername(), userDto.getUsername(), userDto.isProfilePrivate());
+                new FollowerMicroserviceUpdateUserDto(currentlyLoggedUser.getNistagramUsername(), userDto.getUsername(), userDto.isProfilePrivate(),
+                        userDto.getAbout());
 
         currentlyLoggedUser.setAbout(userDto.getAbout());
         currentlyLoggedUser.setName(userDto.getName());
