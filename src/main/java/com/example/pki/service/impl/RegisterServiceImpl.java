@@ -88,7 +88,8 @@ public class RegisterServiceImpl implements RegisterService {
 
         user = userRepository.save(user);
 
-        FollowerMicroserviceUserDto followerMicroserviceUserDto = new FollowerMicroserviceUserDto(dto.getUsername(), dto.isProfilePrivate());
+        FollowerMicroserviceUserDto followerMicroserviceUserDto = new FollowerMicroserviceUserDto(dto.getUsername(), dto.isProfilePrivate(),
+                dto.getAbout());
         createUserInFollowerMicroservices(followerMicroserviceUserDto);
         createUserInContentMicroservices(followerMicroserviceUserDto);
 
