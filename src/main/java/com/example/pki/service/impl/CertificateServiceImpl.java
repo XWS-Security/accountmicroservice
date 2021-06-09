@@ -4,11 +4,14 @@ import com.example.pki.certificate.CertificateGenerator;
 import com.example.pki.exceptions.*;
 import com.example.pki.keystore.KeyStoreReader;
 import com.example.pki.keystore.Keystore;
+import com.example.pki.logging.LoggerService;
+import com.example.pki.logging.LoggerServiceImpl;
 import com.example.pki.model.IssuerData;
 import com.example.pki.model.OCSPCertificate;
 import com.example.pki.model.SubjectData;
 import com.example.pki.model.dto.CertificateDto;
 import com.example.pki.model.dto.DownloadCertificateDto;
+import com.example.pki.model.dto.SubjectDataDto;
 import com.example.pki.model.enums.CA;
 import com.example.pki.repository.CertificateRepository;
 import com.example.pki.service.CertificateService;
@@ -38,6 +41,7 @@ import java.util.Random;
 @Service
 public class CertificateServiceImpl implements CertificateService {
     private final Keystore keystore = new Keystore();
+    private final LoggerService loggerService = new LoggerServiceImpl(this.getClass());
     private final CertificateRepository certificateRepository;
 
     @Autowired
@@ -53,8 +57,6 @@ public class CertificateServiceImpl implements CertificateService {
         if (certificateRepository.findByFileName(certificateName) != null) {
             throw new CertificateAlreadyExists();
         }
-
-        // TODO: insert subject data
 
         X509Certificate parentX509 = null;
         if (dto.getCa() != CA.Root) {
@@ -202,7 +204,7 @@ public class CertificateServiceImpl implements CertificateService {
             keyGen.initialize(2048, random);
             return keyGen.generateKeyPair();
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-            // TODO: log error
+            loggerService.logException(e.getMessage());
             throw new CouldNotGenerateKeyPairException();
         }
     }
@@ -223,7 +225,14 @@ public class CertificateServiceImpl implements CertificateService {
 
         String sn = Integer.toString(n);
         X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+        SubjectDataDto data = dto.getSubjectData();
         builder.addRDN(BCStyle.CN, dto.getCertificateName());
+        builder.addRDN(BCStyle.SURNAME, data.getSurname());
+        builder.addRDN(BCStyle.GIVENNAME, data.getName());
+        builder.addRDN(BCStyle.O, data.getOrganisation());
+        builder.addRDN(BCStyle.OU, data.getOrganisationUnit());
+        builder.addRDN(BCStyle.C, data.getCountryCode());
+        builder.addRDN(BCStyle.E, data.getEmail());
         SubjectData subjectData = new SubjectData(keyPairSubject.getPublic(), builder.build(), sn, startDate, endDate);
         return new DataKeyPair(subjectData, keyPairSubject.getPrivate());
     }
