@@ -1,26 +1,34 @@
 package com.example.pki.service.impl;
 
-import com.example.pki.exceptions.*;
-import com.example.pki.keystore.Keystore;
 import com.example.pki.certificate.CertificateGenerator;
+import com.example.pki.exceptions.*;
+import com.example.pki.keystore.KeyStoreReader;
+import com.example.pki.keystore.Keystore;
 import com.example.pki.model.IssuerData;
 import com.example.pki.model.OCSPCertificate;
 import com.example.pki.model.SubjectData;
 import com.example.pki.model.dto.CertificateDto;
+import com.example.pki.model.dto.DownloadCertificateDto;
 import com.example.pki.model.enums.CA;
 import com.example.pki.repository.CertificateRepository;
 import com.example.pki.service.CertificateService;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.*;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -159,6 +167,20 @@ public class CertificateServiceImpl implements CertificateService {
                 .trustManager(keystore.readCertificateFromPfx("root"))
                 .build();
         return HttpClient.create().secure(t -> t.sslContext(sslContext));
+    }
+
+    @Override
+    public void downloadCertificate(DownloadCertificateDto certificateDto) throws CertificateEncodingException, IOException {
+        KeyStoreReader reader = new KeyStoreReader();
+        X509Certificate certificate = (X509Certificate) reader.readCertificate("data/" + certificateDto.getCertificateName() + ".pfx",
+                certificateDto.getKeystorePass(), certificateDto.getCertificateName());
+
+        X500Name x500Name = new JcaX509CertificateHolder(certificate).getSubject();
+        RDN cn = x500Name.getRDNs(BCStyle.CN)[0];
+        String certificateName = IETFUtils.valueToString(cn.getFirst().getValue());
+
+        FileOutputStream os = new FileOutputStream("C:\\certs\\" + certificateName + ".pfx");
+        os.write(certificate.getEncoded());
     }
 
     private CertificateDto createCertificateDto(OCSPCertificate ocspCertificate, X509Certificate certificate) {
