@@ -2,26 +2,33 @@ package com.example.pki.model.dto;
 
 import com.example.pki.model.enums.CA;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 import java.util.Date;
 
 public class CertificateDto implements Serializable {
-
     private CA ca;
     private Date startDate;
     private Date endDate;
+    @Pattern(regexp = "^[^<>]+")
     private String issuerUid;
+    @Pattern(regexp = "^[^<>]+")
     private String subjectUid;
+    @Pattern(regexp = "^[^<>]+")
+    @NotNull
     private String certificateName;
+    @Pattern(regexp = "^[^<>]+")
     private String parentName;
     private boolean revoked;
     private boolean valid;
+    private SubjectDataDto subjectData;
 
     public CertificateDto() {
     }
 
     public CertificateDto(CA ca, Date startDate, Date endDate, String certificateName,
-    String parentName, boolean revoked, boolean valid) {
+                          String parentName, boolean revoked, boolean valid) {
         this.ca = ca;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -101,5 +108,13 @@ public class CertificateDto implements Serializable {
 
     public void setParentName(String parentName) {
         this.parentName = parentName;
+    }
+
+    public SubjectDataDto getSubjectData() {
+        return subjectData;
+    }
+
+    public void setSubjectData(SubjectDataDto subjectData) {
+        this.subjectData = subjectData;
     }
 }
