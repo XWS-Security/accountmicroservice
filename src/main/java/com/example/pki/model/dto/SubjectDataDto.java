@@ -5,8 +5,6 @@ import java.io.Serializable;
 
 public class SubjectDataDto implements Serializable {
     @Pattern(regexp = "^[^<>]+")
-    private String cn;
-    @Pattern(regexp = "^[^<>]+")
     private String name;
     @Pattern(regexp = "^[^<>]+")
     private String surname;
@@ -20,14 +18,6 @@ public class SubjectDataDto implements Serializable {
     private String email;
 
     public SubjectDataDto() {
-    }
-
-    public String getCn() {
-        return cn;
-    }
-
-    public void setCn(String cn) {
-        this.cn = cn;
     }
 
     public String getName() {
