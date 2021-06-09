@@ -54,4 +54,8 @@ public interface LoggerService {
     void revokeCertificateSuccess(String email);
 
     void revokeCertificateFailed(String email, String reason);
+
+    void downloadCertificateSuccess(String username);
+
+    void downloadCertificateFailed(String username, String reason);
 }

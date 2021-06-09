@@ -136,6 +136,16 @@ public class LoggerServiceImpl implements LoggerService {
     }
 
     @Override
+    public void downloadCertificateSuccess(String username) {
+        logger.info("Download certificate success: { 'username': {}, }", username);
+    }
+
+    @Override
+    public void downloadCertificateFailed(String username, String reason) {
+        logger.info("Download certificate failed: { 'username': {}, 'reason': {} }", username, reason);
+    }
+
+    @Override
     public void logUpdateUserSuccess(String username) {
         logger.info("Updated user successfully: { 'username': {}}", username);
     }

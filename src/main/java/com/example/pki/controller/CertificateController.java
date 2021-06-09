@@ -5,6 +5,7 @@ import com.example.pki.logging.LoggerService;
 import com.example.pki.logging.LoggerServiceImpl;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.CertificateDto;
+import com.example.pki.model.dto.DownloadCertificateDto;
 import com.example.pki.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -77,6 +78,18 @@ public class CertificateController {
         } catch (Exception e) {
             loggerService.revokeCertificateFailed(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getEmail(), e.getMessage());
             return new ResponseEntity<>("Something went wrong!", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/download")
+    public ResponseEntity<String> downloadCertificate(@RequestBody DownloadCertificateDto certificateDto) {
+        try {
+            certificateService.downloadCertificate(certificateDto);
+            loggerService.downloadCertificateSuccess(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername());
+            return new ResponseEntity<>("Certificate successfully downloaded.", HttpStatus.OK);
+        } catch (Exception e) {
+            loggerService.downloadCertificateFailed(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername(), e.getMessage());
+            return new ResponseEntity<>("Check password! Something went wrong!", HttpStatus.BAD_REQUEST);
         }
     }
 }
