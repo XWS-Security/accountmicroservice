@@ -54,6 +54,8 @@ public class CertificateServiceImpl implements CertificateService {
             throw new CertificateAlreadyExists();
         }
 
+        // TODO: insert subject data
+
         X509Certificate parentX509 = null;
         if (dto.getCa() != CA.Root) {
             parentX509 = keystore.readCertificateFromPfx(parentName);

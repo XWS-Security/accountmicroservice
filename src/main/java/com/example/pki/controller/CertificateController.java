@@ -12,8 +12,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -29,7 +32,7 @@ public class CertificateController {
     }
 
     @PostMapping("/createCertificate")
-    public ResponseEntity<String> generateCertificate(@RequestBody CertificateDto certificateDto) {
+    public ResponseEntity<String> generateCertificate(@RequestBody @Valid CertificateDto certificateDto) {
         try {
             certificateService.generate(certificateDto);
             loggerService.createCertificateSuccess(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getEmail());
@@ -47,7 +50,7 @@ public class CertificateController {
         try {
             List<CertificateDto> certificates = certificateService.getCertificates(true);
             loggerService.getCACertificatesSuccess(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getEmail());
-            return new ResponseEntity<>(certificateService.getCertificates(true), HttpStatus.OK);
+            return new ResponseEntity<>(certificates, HttpStatus.OK);
 
         } catch (KeystoreErrorException e) {
             loggerService.getCACertificatesFailed(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getEmail(), e.getMessage());
@@ -60,7 +63,7 @@ public class CertificateController {
         try {
             List<CertificateDto> certificates = certificateService.getCertificates(false);
             loggerService.getAllCertificatesSuccess(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getEmail());
-            return new ResponseEntity<>(certificateService.getCertificates(false), HttpStatus.OK);
+            return new ResponseEntity<>(certificates, HttpStatus.OK);
 
         } catch (KeystoreErrorException e) {
             loggerService.getAllCertificatesFailed(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getEmail(), e.getMessage());
@@ -69,7 +72,7 @@ public class CertificateController {
     }
 
     @PostMapping("/revoke")
-    public ResponseEntity<String> revokeCertificate(@RequestBody CertificateDto certificateDto) {
+    public ResponseEntity<String> revokeCertificate(@RequestBody @Valid CertificateDto certificateDto) {
         try {
             certificateService.revoke(certificateDto.getCertificateName());
             loggerService.revokeCertificateSuccess(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getEmail());
@@ -91,5 +94,19 @@ public class CertificateController {
             loggerService.downloadCertificateFailed(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername(), e.getMessage());
             return new ResponseEntity<>("Check password! Something went wrong!", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
+        loggerService.logValidationFailed(e.getMessage());
+        return new ResponseEntity<>("Invalid characters in request", HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    ResponseEntity<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        loggerService.logValidationFailed(e.getMessage());
+        return new ResponseEntity<>("Invalid characters in request", HttpStatus.BAD_REQUEST);
     }
 }
