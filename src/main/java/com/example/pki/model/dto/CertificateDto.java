@@ -1,7 +1,9 @@
 package com.example.pki.model.dto;
 
 import com.example.pki.model.enums.CA;
+import com.example.pki.util.Constants;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
@@ -11,17 +13,18 @@ public class CertificateDto implements Serializable {
     private CA ca;
     private Date startDate;
     private Date endDate;
-    @Pattern(regexp = "^[^<>]+")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String issuerUid;
-    @Pattern(regexp = "^[^<>]+")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String subjectUid;
-    @Pattern(regexp = "^[^<>]+")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     @NotNull
     private String certificateName;
-    @Pattern(regexp = "^[^<>]+")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String parentName;
     private boolean revoked;
     private boolean valid;
+    @Valid
     private SubjectDataDto subjectData;
 
     public CertificateDto() {

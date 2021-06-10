@@ -1,20 +1,26 @@
 package com.example.pki.model.dto;
 
+import com.example.pki.util.Constants;
+
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 public class ResetPasswordDto implements Serializable {
-
-    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
+    @NotNull
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String email;
 
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$", message = "Invalid character!")
+    @NotNull
+    @Pattern(regexp = Constants.PASSWORD_PATTERN, message = Constants.PASSWORD_INVALID_MESSAGE)
     private String newPassword;
 
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$", message = "Invalid character!")
+    @NotNull
+    @Pattern(regexp = Constants.PASSWORD_PATTERN, message = Constants.PASSWORD_INVALID_MESSAGE)
     private String newPasswordRepeated;
 
-    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
+    @NotNull
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String code;
 
     public ResetPasswordDto() {

@@ -7,15 +7,19 @@ import com.example.pki.logging.LoggerServiceImpl;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.UserDto;
 import com.example.pki.service.ProfileService;
+import com.example.pki.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
 import java.util.List;
 
 @RestController
@@ -60,7 +64,21 @@ public class ProfileController {
     }
 
     @GetMapping("/searchUser/{nistagramUsername}")
-    public ResponseEntity<List<UserDto>> getNistagramUserByUsername(@PathVariable("nistagramUsername") String nistagramUsername) {
+    public ResponseEntity<List<UserDto>> getNistagramUserByUsername(@PathVariable("nistagramUsername") @Pattern(regexp = Constants.USERNAME_PATTERN, message = Constants.USERNAME_INVALID_MESSAGE) String nistagramUsername) {
         return new ResponseEntity<>(profileService.findNistagramUser(nistagramUsername), HttpStatus.OK);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
+        loggerService.logValidationFailed(e.getMessage());
+        return new ResponseEntity<>("Invalid characters in request", HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    ResponseEntity<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        loggerService.logValidationFailed(e.getMessage());
+        return new ResponseEntity<>("Invalid characters in request", HttpStatus.BAD_REQUEST);
     }
 }

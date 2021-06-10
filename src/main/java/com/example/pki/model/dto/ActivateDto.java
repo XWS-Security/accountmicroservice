@@ -1,14 +1,15 @@
 package com.example.pki.model.dto;
 
+import com.example.pki.util.Constants;
+
 import javax.validation.constraints.Pattern;
 import java.util.Objects;
 
 public class ActivateDto {
-
-    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String code;
 
-    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String email;
 
     public ActivateDto(String code, String email) {
