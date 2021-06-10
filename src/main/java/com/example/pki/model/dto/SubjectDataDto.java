@@ -1,20 +1,22 @@
 package com.example.pki.model.dto;
 
+import com.example.pki.util.Constants;
+
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 public class SubjectDataDto implements Serializable {
-    @Pattern(regexp = "^[^<>]+")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String name;
-    @Pattern(regexp = "^[^<>]+")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String surname;
-    @Pattern(regexp = "^[^<>]+")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String organisation;
-    @Pattern(regexp = "^[^<>]+")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String organisationUnit;
-    @Pattern(regexp = "^[^<>]+")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String countryCode;
-    @Pattern(regexp = "^[^<>]+")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String email;
 
     public SubjectDataDto() {

@@ -72,7 +72,7 @@ public class LogInServiceImpl implements LogInService {
 
     private User getUser(LogInDto authenticationRequest) {
         Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(),
+                .authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
                         authenticationRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);

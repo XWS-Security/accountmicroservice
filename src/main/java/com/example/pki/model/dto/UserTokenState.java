@@ -3,7 +3,6 @@ package com.example.pki.model.dto;
 import java.util.Objects;
 
 public class UserTokenState {
-
     private String userType;
     private String accessToken;
     private int expiresIn;

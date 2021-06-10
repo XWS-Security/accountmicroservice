@@ -2,6 +2,7 @@ package com.example.pki.model.dto;
 
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.enums.Gender;
+import com.example.pki.util.Constants;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -10,27 +11,27 @@ import java.util.Date;
 public class RegisterDto {
 
     @NotNull
-    @Pattern(regexp = "^[a-zA-Z0-9_]{2,12}", message = "Username must be 2 to 12 characters long and can contain only letters, numbers and an underscore.")
+    @Pattern(regexp = Constants.USERNAME_PATTERN, message = Constants.USERNAME_INVALID_MESSAGE)
     private String username;
 
     @NotNull
-    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String name;
 
     @NotNull
-    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String surname;
 
     @NotNull
-    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String email;
 
     @NotNull
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$", message = "Invalid character!")
+    @Pattern(regexp = Constants.PASSWORD_PATTERN, message = Constants.PASSWORD_INVALID_MESSAGE)
     private String password;
 
     @NotNull
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=]).{10,20}$", message = "Invalid character!")
+    @Pattern(regexp = Constants.PASSWORD_PATTERN, message = Constants.PASSWORD_INVALID_MESSAGE)
     private String repeatedPassword;
 
     @NotNull
@@ -42,7 +43,7 @@ public class RegisterDto {
     @NotNull
     private Date dateOfBirth;
 
-    @Pattern(regexp = "^[^<>]*", message = "Invalid character!")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String about;
 
     private boolean profilePrivate;
@@ -52,7 +53,7 @@ public class RegisterDto {
     }
 
     public RegisterDto(String name, String surname, String email, String password, String repeatedPassword, String username,
-                   Gender gender, Date dateOfBirth, String phoneNumber, String about, boolean profilePrivate) {
+                       Gender gender, Date dateOfBirth, String phoneNumber, String about, boolean profilePrivate) {
         this.username = username;
         this.name = name;
         this.surname = surname;
@@ -67,7 +68,7 @@ public class RegisterDto {
     }
 
     public RegisterDto(String name, String surname, String email, String username,
-                   Gender gender, Date dateOfBirth, String phoneNumber, String about, boolean profilePrivate) {
+                       Gender gender, Date dateOfBirth, String phoneNumber, String about, boolean profilePrivate) {
         this.username = username;
         this.name = name;
         this.surname = surname;

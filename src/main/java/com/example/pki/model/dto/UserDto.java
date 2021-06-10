@@ -2,6 +2,7 @@ package com.example.pki.model.dto;
 
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.enums.Gender;
+import com.example.pki.util.Constants;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -9,27 +10,26 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class UserDto implements Serializable {
-
     @NotNull
-    @Pattern(regexp = "^[a-zA-Z0-9_]{2,12}", message = "Username must be 2 to 12 characters long and can contain only letters, numbers and an underscore.")
+    @Pattern(regexp = Constants.USERNAME_PATTERN, message = Constants.USERNAME_INVALID_MESSAGE)
     private String username;
 
     @NotNull
-    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String name;
 
     @NotNull
-    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String surname;
 
     @NotNull
-    @Pattern(regexp = "^[^<>]+", message = "Invalid character!")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String email;
 
     @Pattern(regexp = "^[0-9]*", message = "Invalid character!")
     private String phoneNumber;
 
-    @Pattern(regexp = "^[^<>]*", message = "Invalid character!")
+    @Pattern(regexp = Constants.PLAIN_TEXT_PATTERN, message = Constants.INVALID_CHARACTER_MESSAGE)
     private String about;
 
     private Date dateOfBirth;

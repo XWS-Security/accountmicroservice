@@ -12,12 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
 @RestController
@@ -40,11 +39,11 @@ public class LoginController {
     public ResponseEntity<String> sendTwoFactorAuthSecret(@RequestBody @Valid LogInDto authenticationRequest) {
         try {
             logInService.sendTwoFactorAuthSecret(authenticationRequest);
-            loggerService.sendTwoFactorAuthenticationSecretSuccess(authenticationRequest.getEmail());
+            loggerService.sendTwoFactorAuthenticationSecretSuccess(authenticationRequest.getUsername());
             return new ResponseEntity<>(HttpStatus.OK);
 
         } catch (Exception e) {
-            loggerService.sendTwoFactorAuthenticationSecretFailed(authenticationRequest.getEmail(), e.getMessage());
+            loggerService.sendTwoFactorAuthenticationSecretFailed(authenticationRequest.getUsername(), e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
@@ -53,11 +52,11 @@ public class LoginController {
     public ResponseEntity<UserTokenState> createAuthenticationToken(@RequestBody @Valid LogInDto authenticationRequest) {
         try {
             UserTokenState state = logInService.logIn(authenticationRequest);
-            loggerService.loginSuccess(authenticationRequest.getEmail());
+            loggerService.loginSuccess(authenticationRequest.getUsername());
             return ResponseEntity.ok(state);
 
         } catch (Exception e) {
-            loggerService.loginFailed(authenticationRequest.getEmail(), e.getMessage());
+            loggerService.loginFailed(authenticationRequest.getUsername(), e.getMessage());
             return new ResponseEntity<UserTokenState>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -78,5 +77,19 @@ public class LoginController {
             UserTokenState userTokenState = new UserTokenState();
             return ResponseEntity.badRequest().body(userTokenState);
         }
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
+        loggerService.logValidationFailed(e.getMessage());
+        return new ResponseEntity<>("Invalid characters in request", HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    ResponseEntity<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        loggerService.logValidationFailed(e.getMessage());
+        return new ResponseEntity<>("Invalid characters in request", HttpStatus.BAD_REQUEST);
     }
 }
