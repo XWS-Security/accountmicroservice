@@ -9,7 +9,7 @@ public interface ProfileService {
 
     UserDto extractUserInfo();
 
-    void updateUserInfo(UserDto userDto) throws SSLException;
+    void updateUserInfo(UserDto userDto, String token) throws SSLException;
 
     List<UserDto> findAllNistagramUsers();
 

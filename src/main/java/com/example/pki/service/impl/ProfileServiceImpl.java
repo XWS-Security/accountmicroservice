@@ -56,7 +56,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public void updateUserInfo(UserDto userDto) throws SSLException {
+    public void updateUserInfo(UserDto userDto, String token) throws SSLException {
         NistagramUser currentlyLoggedUser = getCurrentlyLoggedUser();
 
         FollowerMicroserviceUpdateUserDto followerMicroserviceUpdateUserDto =
@@ -77,8 +77,8 @@ public class ProfileServiceImpl implements ProfileService {
             setUserEmail(userDto.getEmail());
         }
 
-        updateUserInfoInContentMicroservice(followerMicroserviceUpdateUserDto);
-        updateUserInfoInFollowerMicroservice(followerMicroserviceUpdateUserDto);
+        updateUserInfoInContentMicroservice(followerMicroserviceUpdateUserDto, token);
+        updateUserInfoInFollowerMicroservice(followerMicroserviceUpdateUserDto, token);
 
         userRepository.save(currentlyLoggedUser);
     }
@@ -126,7 +126,7 @@ public class ProfileServiceImpl implements ProfileService {
         return userDtos;
     }
 
-    private void updateUserInfoInFollowerMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto) throws SSLException {
+    private void updateUserInfoInFollowerMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto, String token) throws SSLException {
         WebClient client = WebClient.builder()
                 .baseUrl(followerMicroserviceURI)
                 .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
@@ -135,13 +135,14 @@ public class ProfileServiceImpl implements ProfileService {
         client.put()
                 .uri("/users")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .headers(h -> h.setBearerAuth(token))
                 .body(Mono.just(followerMicroserviceUserDto), FollowerMicroserviceUserDto.class)
                 .retrieve()
                 .bodyToFlux(String.class)
                 .subscribe();
     }
 
-    private void updateUserInfoInContentMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto) throws SSLException {
+    private void updateUserInfoInContentMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto, String token) throws SSLException {
         WebClient client = WebClient.builder()
                 .baseUrl(contentMicroserviceURI)
                 .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
@@ -150,6 +151,7 @@ public class ProfileServiceImpl implements ProfileService {
         client.put()
                 .uri("/profile/updateUser")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .headers(h -> h.setBearerAuth(token))
                 .body(Mono.just(followerMicroserviceUserDto), FollowerMicroserviceUserDto.class)
                 .retrieve()
                 .bodyToFlux(String.class)
