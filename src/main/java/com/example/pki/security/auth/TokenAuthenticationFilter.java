@@ -1,9 +1,12 @@
 package com.example.pki.security.auth;
 
+import com.example.pki.logging.LoggerService;
+import com.example.pki.logging.LoggerServiceImpl;
 import com.example.pki.security.TokenUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 
@@ -17,6 +20,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private TokenUtils tokenUtils;
     private UserDetailsService userDetailsService;
+    private final LoggerService loggerService = new LoggerServiceImpl(this.getClass());
 
     public TokenAuthenticationFilter(TokenUtils tokenHelper, UserDetailsService userDetailsService) {
         this.tokenUtils = tokenHelper;
@@ -34,12 +38,15 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             username = tokenUtils.getUsernameFromToken(authToken);
 
             if (username != null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-                if (tokenUtils.validateToken(authToken, userDetails)) {
-                    TokenBasedAuthentication authentication = new TokenBasedAuthentication(userDetails);
-                    authentication.setToken(authToken);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                try {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    if (tokenUtils.validateToken(authToken, userDetails)) {
+                        TokenBasedAuthentication authentication = new TokenBasedAuthentication(userDetails);
+                        authentication.setToken(authToken);
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
+                } catch (UsernameNotFoundException e) {
+                    loggerService.logTokenException(e.getMessage());
                 }
             }
         }
