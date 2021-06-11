@@ -6,6 +6,7 @@ import com.example.pki.logging.LoggerService;
 import com.example.pki.logging.LoggerServiceImpl;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.UserDto;
+import com.example.pki.security.TokenUtils;
 import com.example.pki.service.ProfileService;
 import com.example.pki.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
@@ -30,12 +32,13 @@ public class ProfileController {
 
     @Qualifier("profileServiceImpl")
     private final ProfileService profileService;
-
+    private final TokenUtils tokenUtils;
     private final LoggerService loggerService = new LoggerServiceImpl(this.getClass());
 
     @Autowired
-    public ProfileController(ProfileService profileService) {
+    public ProfileController(ProfileService profileService, TokenUtils tokenUtils) {
         this.profileService = profileService;
+        this.tokenUtils = tokenUtils;
     }
 
     @GetMapping("/getUserInfo")
@@ -44,9 +47,10 @@ public class ProfileController {
     }
 
     @PutMapping("/updateProfileInfo")
-    public ResponseEntity<String> updateProfileInfo(@RequestBody @Valid UserDto userDto) {
+    public ResponseEntity<String> updateProfileInfo(@RequestBody @Valid UserDto userDto, HttpServletRequest request) {
         try {
-            profileService.updateUserInfo(userDto);
+            String token = tokenUtils.getToken(request);
+            profileService.updateUserInfo(userDto, token);
             loggerService.logUpdateUserSuccess(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername());
             return new ResponseEntity<>("Profile info successfully updated!", HttpStatus.OK);
 
