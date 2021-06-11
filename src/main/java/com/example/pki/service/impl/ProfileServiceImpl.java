@@ -107,8 +107,6 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public List<UserDto> findNistagramUser(String nistagramUsername) {
-        checkForInvalidSigns(nistagramUsername);
-
         ArrayList<NistagramUser> users = (ArrayList<NistagramUser>) nistagramUserRepository.findAll();
         ArrayList<UserDto> userDtos = new ArrayList<>();
 
@@ -184,15 +182,5 @@ public class ProfileServiceImpl implements ProfileService {
             }
         });
         getCurrentlyLoggedUser().setNistagramUsername(username);
-    }
-
-    private void checkForInvalidSigns(String dtoParameter) {
-        if (dtoParameter.contains(">") || dtoParameter.contains("<")) {
-            throw new InvalidCharacterException();
-        }
-    }
-
-    private boolean checkPassword(String password) {
-        return getCurrentlyLoggedUser().getPassword().equals(passwordEncoder.encode(password));
     }
 }
