@@ -2,7 +2,6 @@ package com.example.pki.keystore;
 
 import com.example.pki.exceptions.KeystoreErrorException;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,6 +24,7 @@ public class Keystore {
     }
 
     public X509Certificate readCertificateFromPfx(String name) {
+        System.out.println(this.keystorePath);
         KeyStoreReader reader = new KeyStoreReader();
         String fileName = this.keystorePath + name + ".pfx";
         return (X509Certificate) reader.readCertificate(fileName, KEY_STORE_PASS, name);
