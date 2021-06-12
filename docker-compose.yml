@@ -20,8 +20,14 @@ services:
       DATABASE_DOMAIN: ${DATABASE_DOMAIN}
       DATABASE_SCHEMA: ${DATABASE_SCHEMA}
       FOLLOWER_MICROSERVICE: ${FOLLOWER_MICROSERVICE}
+      CONTENT_MICROSERVICE: ${CONTENT_MICROSERVICE}
+      ACCOUNT_MICROSERVICE_CERTIFICATE: ${ACCOUNT_MICROSERVICE_CERTIFICATE}
+      KEYSTORE_CERT: ${KEYSTORE}
+      ACCOUNT_PORT: ${ACCOUNT_PORT}
     depends_on: 
       - postgres
+    volumes:
+      - /data/certificates
       
   followermicroservice:
     build:
@@ -38,8 +44,12 @@ services:
     environment:
       NEO4J_DRIVER_URI: bolt://neo4j:7687
       NEO4J_PASSWORD: super
+      FOLLOWER_MICROSERVICE_CERTIFICATE: ${FOLLOWER_MICROSERVICE_CERTIFICATE}
+      FOLLOWER_PORT: ${FOLLOWER_PORT}
     depends_on: 
       - neo4j
+    volumes:
+      - /data/certificates
       
   contentmicroservice:
     build:
@@ -54,10 +64,18 @@ services:
     networks:
       - nistagram-network
     environment:
-      NEO4J_DRIVER_URI: bolt://neo4j:7687
-      NEO4J_PASSWORD: super
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_DOMAIN: ${DATABASE_DOMAIN}
+      DATABASE_SCHEMA: ${DATABASE_CONTENT_SCHEMA}
+      CONTENT_PATH: ${CONTENT_PATH}
+      CONTENT_MICROSERVICE_CERTIFICATE: ${CONTENT_MICROSERVICE_CERTIFICATE}
+      CONTENT_PORT: ${CONTENT_PORT}
     depends_on: 
-      - neo4j
+      - postgres
+    volumes:
+      - /data/images
+      - /data/certificates
       
   neo4j:
     image: neo4j:4.1.3
@@ -101,6 +119,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
 networks:
   nistagram-network:
