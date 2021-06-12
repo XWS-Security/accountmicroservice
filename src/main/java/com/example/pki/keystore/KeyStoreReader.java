@@ -56,6 +56,7 @@ public class KeyStoreReader {
             }
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
             // TODO: log error
+            e.printStackTrace();
             throw new KeystoreErrorException();
         }
         return null;
