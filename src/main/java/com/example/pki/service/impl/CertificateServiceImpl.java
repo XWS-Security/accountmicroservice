@@ -24,6 +24,7 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.netty.http.client.HttpClient;
 
@@ -40,7 +41,11 @@ import java.util.Random;
 
 @Service
 public class CertificateServiceImpl implements CertificateService {
-    private final Keystore keystore = new Keystore();
+
+    @Value("${KEYSTORE_CERT}")
+    public String KEYSTORE_PATH;
+
+    private final Keystore keystore = new Keystore("/data/certificates/");
     private final LoggerService loggerService = new LoggerServiceImpl(this.getClass());
     private final CertificateRepository certificateRepository;
 

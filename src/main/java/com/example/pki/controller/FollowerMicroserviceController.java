@@ -21,9 +21,12 @@ import java.io.IOException;
 @Validated
 public class FollowerMicroserviceController {
 
+    @Value("${KEYSTORE_CERT}")
+    public String KEYSTORE_PATH;
+
     @Value("${FOLLOWER}")
     private String followerMicroserviceURI;
-    private final Keystore keystore = new Keystore();
+    private final Keystore keystore = new Keystore("/data/certificates/");
 
     @GetMapping("/hitMicroservice") // Purpose of this method is to show communication between microservices
     public Flux<String> hitFollowerMicroservice() throws IOException {
