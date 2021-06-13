@@ -188,7 +188,7 @@ public class CertificateServiceImpl implements CertificateService {
         RDN cn = x500Name.getRDNs(BCStyle.CN)[0];
         String certificateName = IETFUtils.valueToString(cn.getFirst().getValue());
 
-        FileOutputStream os = new FileOutputStream("/data/certificates/download" + certificateName + ".pfx");
+        FileOutputStream os = new FileOutputStream("/data/certificates/download/" + certificateName + ".pfx");
         os.write(certificate.getEncoded());
     }
 
