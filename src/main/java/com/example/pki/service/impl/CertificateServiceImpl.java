@@ -181,14 +181,14 @@ public class CertificateServiceImpl implements CertificateService {
     @Override
     public void downloadCertificate(DownloadCertificateDto certificateDto) throws CertificateEncodingException, IOException {
         KeyStoreReader reader = new KeyStoreReader();
-        X509Certificate certificate = (X509Certificate) reader.readCertificate("data/" + certificateDto.getCertificateName() + ".pfx",
+        X509Certificate certificate = (X509Certificate) reader.readCertificate("/data/certificates/" + certificateDto.getCertificateName() + ".pfx",
                 certificateDto.getKeystorePass(), certificateDto.getCertificateName());
 
         X500Name x500Name = new JcaX509CertificateHolder(certificate).getSubject();
         RDN cn = x500Name.getRDNs(BCStyle.CN)[0];
         String certificateName = IETFUtils.valueToString(cn.getFirst().getValue());
 
-        FileOutputStream os = new FileOutputStream("C:\\certs\\" + certificateName + ".pfx");
+        FileOutputStream os = new FileOutputStream("/data/certificates/" + certificateName + ".pfx");
         os.write(certificate.getEncoded());
     }
 
