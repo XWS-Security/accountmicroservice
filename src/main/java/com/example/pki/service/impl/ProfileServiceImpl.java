@@ -126,6 +126,24 @@ public class ProfileServiceImpl implements ProfileService {
         return userDtos;
     }
 
+    @Override
+    public void removeUser(Long userId, String token) throws SSLException {
+        userRepository.deleteById(userId);
+
+        WebClient client = WebClient.builder()
+                .baseUrl(contentMicroserviceURI)
+                .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
+                .build();
+
+        client.put()
+                .uri("/profile/remove/" + userId)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .headers(h -> h.setBearerAuth(token))
+                .retrieve()
+                .bodyToFlux(long.class)
+                .subscribe();
+    }
+
     private void updateUserInfoInFollowerMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto, String token) throws SSLException {
         WebClient client = WebClient.builder()
                 .baseUrl(followerMicroserviceURI)

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -72,6 +73,18 @@ public class ProfileController {
     @GetMapping("/searchUser/{nistagramUsername}")
     public ResponseEntity<List<UserDto>> getNistagramUserByUsername(@PathVariable("nistagramUsername") @Pattern(regexp = Constants.USERNAME_PATTERN, message = Constants.USERNAME_INVALID_MESSAGE) String nistagramUsername) {
         return new ResponseEntity<>(profileService.findNistagramUser(nistagramUsername), HttpStatus.OK);
+    }
+
+    @PutMapping(path = "/remove/{id}")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    public ResponseEntity<String> remove(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            String token = tokenUtils.getToken(request);
+            profileService.removeUser(id, token);
+            return new ResponseEntity<>("User successfully removed!", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Something went wrong!", HttpStatus.BAD_REQUEST);
+        }
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
