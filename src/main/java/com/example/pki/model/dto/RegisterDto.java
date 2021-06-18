@@ -80,11 +80,6 @@ public class RegisterDto {
         this.profilePrivate = profilePrivate;
     }
 
-    public static UserDto convertUserToDto(NistagramUser user) {
-        return new UserDto(user.getName(), user.getSurname(), user.getEmail(), user.getNistagramUsername(),
-                user.getGender(), user.getDateOfBirth(), user.getPhoneNumber(), user.getAbout(), user.isProfilePrivate());
-    }
-
     public Date getDateOfBirth() {
         return dateOfBirth;
     }
