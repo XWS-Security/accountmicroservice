@@ -1,7 +1,6 @@
 package com.example.pki.service.impl;
 
 import com.example.pki.exceptions.EmailAlreadyExistsException;
-import com.example.pki.exceptions.InvalidCharacterException;
 import com.example.pki.exceptions.UsernameAlreadyExistsException;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.User;
@@ -60,14 +59,16 @@ public class ProfileServiceImpl implements ProfileService {
         NistagramUser currentlyLoggedUser = getCurrentlyLoggedUser();
 
         FollowerMicroserviceUpdateUserDto followerMicroserviceUpdateUserDto =
-                new FollowerMicroserviceUpdateUserDto(currentlyLoggedUser.getNistagramUsername(), userDto.getUsername(), userDto.isProfilePrivate(),
-                        userDto.getAbout());
+                new FollowerMicroserviceUpdateUserDto(currentlyLoggedUser.getNistagramUsername(), userDto.getUsername(),
+                        userDto.getAbout(), userDto.isProfilePrivate(), userDto.isTagsEnabled());
 
         currentlyLoggedUser.setAbout(userDto.getAbout());
         currentlyLoggedUser.setName(userDto.getName());
         currentlyLoggedUser.setSurname(userDto.getSurname());
         currentlyLoggedUser.setPhoneNumber(userDto.getPhoneNumber());
         currentlyLoggedUser.setProfilePrivate(userDto.isProfilePrivate());
+        currentlyLoggedUser.setMessagesEnabled(userDto.isMessagesEnabled());
+        currentlyLoggedUser.setTagsEnabled(userDto.isTagsEnabled());
 
         if (!userDto.getUsername().equals(currentlyLoggedUser.getUsername())) {
             setUsername(userDto.getUsername());
@@ -79,6 +80,7 @@ public class ProfileServiceImpl implements ProfileService {
 
         updateUserInfoInContentMicroservice(followerMicroserviceUpdateUserDto, token);
         updateUserInfoInFollowerMicroservice(followerMicroserviceUpdateUserDto, token);
+        // TODO: update messaging microservice
 
         userRepository.save(currentlyLoggedUser);
     }

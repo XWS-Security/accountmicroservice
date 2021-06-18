@@ -35,6 +35,8 @@ public class UserDto implements Serializable {
     private Date dateOfBirth;
 
     private boolean profilePrivate;
+    private boolean messagesEnabled;
+    private boolean tagsEnabled;
 
     public UserDto() {
 
@@ -119,5 +121,21 @@ public class UserDto implements Serializable {
 
     public void setProfilePrivate(boolean profilePrivate) {
         this.profilePrivate = profilePrivate;
+    }
+
+    public boolean isMessagesEnabled() {
+        return messagesEnabled;
+    }
+
+    public void setMessagesEnabled(boolean messagesEnabled) {
+        this.messagesEnabled = messagesEnabled;
+    }
+
+    public boolean isTagsEnabled() {
+        return tagsEnabled;
+    }
+
+    public void setTagsEnabled(boolean tagsEnabled) {
+        this.tagsEnabled = tagsEnabled;
     }
 }

@@ -34,6 +34,12 @@ public class NistagramUser extends User {
     @Column(name = "profilePrivate")
     private Boolean profilePrivate;
 
+    @Column(name = "messagesEnabled")
+    private boolean messagesEnabled = false;
+
+    @Column(name = "tagsEnabled")
+    private boolean tagsEnabled = false;
+
     @Override
     public String getAdministrationRole() {
         return administrationRole;
@@ -93,6 +99,22 @@ public class NistagramUser extends User {
 
     public void setProfilePrivate(boolean profilePrivate) {
         this.profilePrivate = profilePrivate;
+    }
+
+    public boolean isMessagesEnabled() {
+        return messagesEnabled;
+    }
+
+    public void setMessagesEnabled(boolean messagesEnabled) {
+        this.messagesEnabled = messagesEnabled;
+    }
+
+    public boolean isTagsEnabled() {
+        return tagsEnabled;
+    }
+
+    public void setTagsEnabled(boolean tagsEnabled) {
+        this.tagsEnabled = tagsEnabled;
     }
 }
 
