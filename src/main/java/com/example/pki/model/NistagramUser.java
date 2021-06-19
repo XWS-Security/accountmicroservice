@@ -1,6 +1,7 @@
 package com.example.pki.model;
 
 import com.example.pki.model.enums.Gender;
+import com.example.pki.model.enums.VerificationStatus;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
@@ -15,6 +16,9 @@ public class NistagramUser extends User {
 
     @Column(name = "mail_activation_code", length = 64)
     private String activationCode;
+
+    @Column(name = "verification_status")
+    private VerificationStatus verificationStatus;
 
     @Column(name = "registration_sent_date")
     private Timestamp registrationSentDate;
@@ -98,6 +102,22 @@ public class NistagramUser extends User {
     }
 
     public void setProfilePrivate(boolean profilePrivate) {
+        this.profilePrivate = profilePrivate;
+    }
+
+    public VerificationStatus getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(VerificationStatus verificationStatus) {
+        this.verificationStatus = verificationStatus;
+    }
+
+    public Boolean getProfilePrivate() {
+        return profilePrivate;
+    }
+
+    public void setProfilePrivate(Boolean profilePrivate) {
         this.profilePrivate = profilePrivate;
     }
 

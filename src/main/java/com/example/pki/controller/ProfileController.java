@@ -46,6 +46,11 @@ public class ProfileController {
         return new ResponseEntity<>(profileService.extractUserInfo(), HttpStatus.OK);
     }
 
+    @GetMapping("/username")
+    public ResponseEntity<String> getUsername() {
+        return new ResponseEntity<>(profileService.getUsername(), HttpStatus.OK);
+    }
+
     @PutMapping("/updateProfileInfo")
     public ResponseEntity<String> updateProfileInfo(@RequestBody @Valid UserDto userDto, HttpServletRequest request) {
         try {
