@@ -168,6 +168,16 @@ public class ProfileServiceImpl implements ProfileService {
         }
     }
 
+    @Override
+    public String getUsername() {
+        if (SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString().equals("anonymousUser")) {
+            return null;
+        } else {
+            var user = (NistagramUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            return user.getUsername();
+        }
+    }
+
     private void setUserEmail(String email) {
         ArrayList<User> users = (ArrayList<User>) userRepository.findAll();
         users.forEach(user -> {

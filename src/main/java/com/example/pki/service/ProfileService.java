@@ -14,4 +14,6 @@ public interface ProfileService {
     List<UserDto> findAllNistagramUsers();
 
     List<UserDto> findNistagramUser(String nistagramUsername);
+
+    String getUsername();
 }
