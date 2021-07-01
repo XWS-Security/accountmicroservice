@@ -68,6 +68,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/profile/searchUser/{nistagramUsername}").permitAll()
                 .antMatchers("/verification/status/{username}").permitAll()
                 .antMatchers("/verification/").permitAll()
+                .antMatchers("/verification/influencers/**").permitAll()
                 .antMatchers("/followerMicroservice/hitMicroservice").permitAll()
                 .antMatchers("/test/").hasAuthority("NISTAGRAM_USER_PRIVILEGE")
                 .antMatchers("/verification/approve").hasAnyAuthority("CERTIFICATE")
