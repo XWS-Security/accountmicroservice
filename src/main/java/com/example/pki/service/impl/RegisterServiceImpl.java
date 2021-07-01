@@ -6,17 +6,16 @@ import com.example.pki.mail.MailService;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.Role;
 import com.example.pki.model.User;
-import com.example.pki.model.dto.FollowerMicroserviceUserDto;
 import com.example.pki.model.dto.RegisterDto;
+import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import com.example.pki.repository.UserRepository;
+import com.example.pki.saga.createuser.CreateUserOrchestrator;
 import com.example.pki.service.AuthorityService;
 import com.example.pki.service.CertificateService;
 import com.example.pki.service.RegisterService;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,6 @@ import java.util.List;
 
 @Service
 public class RegisterServiceImpl implements RegisterService {
-
     private final UserRepository userRepository;
     private final AuthorityService authService;
     private final PasswordEncoder passwordEncoder;
@@ -44,9 +42,7 @@ public class RegisterServiceImpl implements RegisterService {
     private String followerMicroserviceURI;
 
     @Autowired
-    public RegisterServiceImpl(UserRepository userRepository,
-                               AuthorityService authService,
-                               PasswordEncoder passwordEncoder,
+    public RegisterServiceImpl(UserRepository userRepository, AuthorityService authService, PasswordEncoder passwordEncoder,
                                MailService<String> mailService, CertificateService certificateService) {
         this.userRepository = userRepository;
         this.authService = authService;
@@ -56,7 +52,7 @@ public class RegisterServiceImpl implements RegisterService {
     }
 
     @Override
-    public NistagramUser register(RegisterDto dto, String siteURL) throws MessagingException, PasswordIsNotValid, SSLException {
+    public Mono<CreateUserOrchestratorResponse> register(RegisterDto dto, String siteURL) throws MessagingException, PasswordIsNotValid, SSLException {
 
         if (!dto.getPassword().equals(dto.getRepeatedPassword())) {
             throw new PasswordsDoNotMatch();
@@ -86,15 +82,11 @@ public class RegisterServiceImpl implements RegisterService {
             throw new UserAlreadyExistsException();
         }
 
-        user = userRepository.save(user);
-
-        FollowerMicroserviceUserDto followerMicroserviceUserDto = new FollowerMicroserviceUserDto(dto.getUsername(), dto.isProfilePrivate(),
-                dto.getAbout());
-        createUserInFollowerMicroservices(followerMicroserviceUserDto);
-        createUserInContentMicroservices(followerMicroserviceUserDto);
-
         sendActivationLink(user, siteURL);
-        return user;
+
+        // TODO: create saga
+        var orchestrator = new CreateUserOrchestrator(getFollowerMicroserviceWebClient(), getContentMicroserviceWebClient(), userRepository);
+        return orchestrator.createUser(user);
     }
 
     @Override
@@ -157,33 +149,17 @@ public class RegisterServiceImpl implements RegisterService {
         return minutes < 1;
     }
 
-    private void createUserInFollowerMicroservices(FollowerMicroserviceUserDto followerMicroserviceUserDto) throws SSLException {
-        WebClient client = WebClient.builder()
+    private WebClient getFollowerMicroserviceWebClient() throws SSLException {
+        return WebClient.builder()
                 .baseUrl(followerMicroserviceURI)
                 .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
-
-        client.post()
-                .uri("/users")
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(Mono.just(followerMicroserviceUserDto), FollowerMicroserviceUserDto.class)
-                .retrieve()
-                .bodyToFlux(String.class).subscribe();
-
     }
 
-    private void createUserInContentMicroservices(FollowerMicroserviceUserDto followerMicroserviceUserDto) throws SSLException {
-        WebClient client = WebClient.builder()
+    private WebClient getContentMicroserviceWebClient() throws SSLException {
+        return WebClient.builder()
                 .baseUrl(contentMicroserviceURI)
                 .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
-
-        client.post()
-                .uri("/profile/createNistagramUser")
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(Mono.just(followerMicroserviceUserDto), FollowerMicroserviceUserDto.class)
-                .retrieve()
-                .bodyToFlux(String.class).subscribe();
-
     }
 }
