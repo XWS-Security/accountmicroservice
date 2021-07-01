@@ -5,6 +5,7 @@ import com.example.pki.logging.LoggerService;
 import com.example.pki.logging.LoggerServiceImpl;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.*;
+import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import com.example.pki.service.PasswordResetService;
 import com.example.pki.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
@@ -44,27 +46,16 @@ public class RegisterController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<String> registerUser(HttpServletRequest request, @RequestBody @Valid RegisterDto dto) {
-        if (!validUserInfo(dto.getEmail(), dto.getPassword())) {
-            return new ResponseEntity<>(missingBasicUserInfoAlert, HttpStatus.BAD_REQUEST);
-        }
-
+    public Mono<CreateUserOrchestratorResponse> registerUser(HttpServletRequest request, @RequestBody @Valid RegisterDto dto) {
         try {
-            this.registerService.register(dto, getSiteURL(request));
             loggerService.logCreateUser(dto.getUsername());
-            return new ResponseEntity<>("/emailSent", HttpStatus.OK);
-
+            return this.registerService.register(dto, getSiteURL(request));
         } catch (PasswordIsNotValid | PasswordsDoNotMatch | UserAlreadyExistsException e) {
             loggerService.logCreateUserFail(dto.getUsername(), e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-
-        } catch (InvalidCharacterException e) {
-            loggerService.logCreateUserFail(dto.getUsername(), e.getMessage());
-            return new ResponseEntity<>("Fields can not contain less/greater than signs.", HttpStatus.BAD_REQUEST);
-
+            return Mono.just(new CreateUserOrchestratorResponse(dto.getUsername(), false, e.getMessage()));
         } catch (Exception e) {
             loggerService.logCreateUserFail(dto.getUsername(), e.getMessage());
-            return new ResponseEntity<>(registrationFailedAlert, HttpStatus.INTERNAL_SERVER_ERROR);
+            return Mono.just(new CreateUserOrchestratorResponse(dto.getUsername(), false, "Something went wrong"));
         }
     }
 
