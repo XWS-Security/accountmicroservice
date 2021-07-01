@@ -47,6 +47,12 @@ public class VerificationController {
         return ResponseEntity.ok(request);
     }
 
+    @GetMapping("/influencers/{username}")
+    public ResponseEntity<List<String>> findInfluencer(@PathVariable String username) {
+        var request = verificationService.getInfluencers(username);
+        return ResponseEntity.ok(request);
+    }
+
     @PutMapping("/approve/{id}")
     public ResponseEntity<String> approve(@PathVariable Long id) {
         verificationService.approve(id);

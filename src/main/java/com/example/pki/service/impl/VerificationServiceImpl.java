@@ -16,9 +16,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class VerificationServiceImpl implements VerificationService {
@@ -143,6 +142,16 @@ public class VerificationServiceImpl implements VerificationService {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    @Override
+    public List<String> getInfluencers(String username) {
+        var influencers = nistagramUserRepository.findInfluencers();
+        var user = getCurrentlyLoggedUser();
+        if(user!=null){
+            return influencers.stream().filter(s ->!s.equals(user.getUsername()) && s.toLowerCase().contains(username.toLowerCase())).collect(Collectors.toList());
+        }
+        throw new UserNotFoundException();
     }
 
     private NistagramUser getCurrentlyLoggedUser() {

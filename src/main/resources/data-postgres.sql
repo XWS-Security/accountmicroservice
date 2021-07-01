@@ -34,11 +34,11 @@ INSERT INTO public.verification_request(
 
 INSERT INTO public.verification_request(
 	id, approved, category, official_document_image_name, resolved, user_id)
-	VALUES (2, false , 1, 'image2.jpg', false, 3);
+	VALUES (2, true , 0, 'image2.jpg', true, 3);
 
 INSERT INTO public.verification_request(
 	id, approved, category, official_document_image_name, resolved, user_id)
-	VALUES (3, false , 2, 'image3.jpg', false, 4);
+	VALUES (3, true , 0, 'image3.jpg', true, 4);
 
 INSERT INTO user_authority(user_id, authority_id) VALUES (1, 1);
 INSERT INTO user_authority(user_id, authority_id) VALUES (2, 2);

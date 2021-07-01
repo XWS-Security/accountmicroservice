@@ -19,6 +19,8 @@ public interface VerificationService {
 
     void reject(Long id);
 
+    List<String> getInfluencers(String username);
+
     List<RegisterAgentDTO> getAgents();
 
     void approveAgent(String username);
