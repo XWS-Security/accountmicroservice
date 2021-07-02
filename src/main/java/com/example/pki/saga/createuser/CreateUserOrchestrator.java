@@ -17,11 +17,13 @@ import java.util.List;
 public class CreateUserOrchestrator {
     private final WebClient followerMicroserviceWebClient;
     private final WebClient contentMicroserviceWebClient;
+    private final WebClient messagingMicroserviceWebClient;
     private final UserRepository userRepository;
 
-    public CreateUserOrchestrator(WebClient followerMicroserviceWebClient, WebClient contentMicroserviceWebClient, UserRepository userRepository) {
+    public CreateUserOrchestrator(WebClient followerMicroserviceWebClient, WebClient contentMicroserviceWebClient, WebClient messagingMicroserviceWebClient, UserRepository userRepository) {
         this.followerMicroserviceWebClient = followerMicroserviceWebClient;
         this.contentMicroserviceWebClient = contentMicroserviceWebClient;
+        this.messagingMicroserviceWebClient = messagingMicroserviceWebClient;
         this.userRepository = userRepository;
     }
 
@@ -53,8 +55,9 @@ public class CreateUserOrchestrator {
         var accountMicroserviceStep = new CreateUserInAccountMicroserviceWorkflowStep(user, userRepository);
         var followerMicroserviceStep = new CreateUserInFollowerMicroserviceWorkflowStep(followerMicroserviceWebClient, userDto);
         var contentMicroserviceStep = new CreateUserInContentMicroserviceWorkflowStep(contentMicroserviceWebClient, userDto);
-        // TODO: add other microservices (messaging)
-        return new Workflow(List.of(accountMicroserviceStep, followerMicroserviceStep, contentMicroserviceStep));
+        var messagingMicroserviceStep = new CreateUserInMessagingMicroserviceWorkflowStep(messagingMicroserviceWebClient, userDto);
+        // TODO: add other microservices (campaign)
+        return new Workflow(List.of(accountMicroserviceStep, followerMicroserviceStep, contentMicroserviceStep, messagingMicroserviceStep));
     }
 
     private CreateUserOrchestratorResponse getResponse(FollowerMicroserviceUserDto userDto, boolean success, String message) {
