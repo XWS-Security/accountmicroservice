@@ -136,5 +136,20 @@ public class NistagramUser extends User {
     public void setTagsEnabled(boolean tagsEnabled) {
         this.tagsEnabled = tagsEnabled;
     }
+
+    @Override
+    public String toString() {
+        return "NistagramUser{" +
+                "about='" + about + '\'' +
+                ", profilePrivate=" + profilePrivate +
+                ", messagesEnabled=" + messagesEnabled +
+                ", tagsEnabled=" + tagsEnabled +
+                ", id=" + id +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", email='" + email + '\'' +
+                ", nistagramUsername='" + nistagramUsername + '\'' +
+                '}';
+    }
 }
 

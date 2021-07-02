@@ -84,7 +84,6 @@ public class RegisterServiceImpl implements RegisterService {
 
         sendActivationLink(user, siteURL);
 
-        // TODO: create saga
         var orchestrator = new CreateUserOrchestrator(getFollowerMicroserviceWebClient(), getContentMicroserviceWebClient(), userRepository);
         return orchestrator.createUser(user);
     }

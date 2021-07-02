@@ -26,7 +26,8 @@ public class CreateUserInFollowerMicroserviceWorkflowStep implements WorkflowSte
 
     @Override
     public Mono<Boolean> process() {
-        return webClient.post()
+        return webClient
+                .post()
                 .uri("/users")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .body(Mono.just(userDto), FollowerMicroserviceUserDto.class)
@@ -42,7 +43,7 @@ public class CreateUserInFollowerMicroserviceWorkflowStep implements WorkflowSte
                 .post()
                 .uri("/users/delete")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(Mono.just(this.userDto), CreateUserInFollowerMicroserviceWorkflowStep.class)
+                .body(Mono.just(this.userDto), FollowerMicroserviceUserDto.class)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .map(r -> true)
