@@ -35,11 +35,14 @@ public class RegisterServiceImpl implements RegisterService {
     private final MailService<String> mailService;
     private final CertificateService certificateService;
 
+    @Value("${FOLLOWER}")
+    private String followerMicroserviceURI;
+
     @Value("${CONTENT}")
     private String contentMicroserviceURI;
 
-    @Value("${FOLLOWER}")
-    private String followerMicroserviceURI;
+    @Value("${MESSAGING}")
+    private String messagingMicroserviceURI;
 
     @Autowired
     public RegisterServiceImpl(UserRepository userRepository, AuthorityService authService, PasswordEncoder passwordEncoder,
@@ -84,7 +87,8 @@ public class RegisterServiceImpl implements RegisterService {
 
         sendActivationLink(user, siteURL);
 
-        var orchestrator = new CreateUserOrchestrator(getFollowerMicroserviceWebClient(), getContentMicroserviceWebClient(), userRepository);
+        var orchestrator = new CreateUserOrchestrator(getFollowerMicroserviceWebClient(),
+                getContentMicroserviceWebClient(), getMessagingMicroserviceWebClient(), userRepository);
         return orchestrator.createUser(user);
     }
 
@@ -158,6 +162,13 @@ public class RegisterServiceImpl implements RegisterService {
     private WebClient getContentMicroserviceWebClient() throws SSLException {
         return WebClient.builder()
                 .baseUrl(contentMicroserviceURI)
+                .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
+                .build();
+    }
+
+    private WebClient getMessagingMicroserviceWebClient() throws SSLException {
+        return WebClient.builder()
+                .baseUrl(messagingMicroserviceURI)
                 .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
     }
