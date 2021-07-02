@@ -48,7 +48,7 @@ public abstract class User implements UserDetails {
     private int passwordResetFailed = 0;
 
     @Column(name = "nistagramUsername", unique = true)
-    private String nistagramUsername;
+    protected String nistagramUsername;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_authority",

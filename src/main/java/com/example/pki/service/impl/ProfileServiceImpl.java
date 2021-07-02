@@ -4,17 +4,15 @@ import com.example.pki.exceptions.EmailAlreadyExistsException;
 import com.example.pki.exceptions.UsernameAlreadyExistsException;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.User;
-import com.example.pki.model.dto.FollowerMicroserviceUpdateUserDto;
-import com.example.pki.model.dto.FollowerMicroserviceUserDto;
 import com.example.pki.model.dto.UserDto;
+import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import com.example.pki.repository.NistagramUserRepository;
 import com.example.pki.repository.UserRepository;
+import com.example.pki.saga.updateuser.UpdateUserOrchestrator;
 import com.example.pki.service.CertificateService;
 import com.example.pki.service.ProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,34 +53,29 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public void updateUserInfo(UserDto userDto, String token) throws SSLException {
-        NistagramUser currentlyLoggedUser = getCurrentlyLoggedUser();
+    public Mono<CreateUserOrchestratorResponse> updateUserInfo(UserDto userDto, String token) throws SSLException {
+        NistagramUser newUser = getCurrentlyLoggedUser();
+        NistagramUser oldUser = (NistagramUser) userRepository.findByNistagramUsername(newUser.getNistagramUsername());
 
-        FollowerMicroserviceUpdateUserDto followerMicroserviceUpdateUserDto =
-                new FollowerMicroserviceUpdateUserDto(currentlyLoggedUser.getNistagramUsername(), userDto.getUsername(),
-                        userDto.getAbout(), userDto.isProfilePrivate(), userDto.isTagsEnabled());
+        newUser.setAbout(userDto.getAbout());
+        newUser.setName(userDto.getName());
+        newUser.setSurname(userDto.getSurname());
+        newUser.setPhoneNumber(userDto.getPhoneNumber());
+        newUser.setProfilePrivate(userDto.isProfilePrivate());
+        newUser.setMessagesEnabled(userDto.isMessagesEnabled());
+        newUser.setTagsEnabled(userDto.isTagsEnabled());
 
-        currentlyLoggedUser.setAbout(userDto.getAbout());
-        currentlyLoggedUser.setName(userDto.getName());
-        currentlyLoggedUser.setSurname(userDto.getSurname());
-        currentlyLoggedUser.setPhoneNumber(userDto.getPhoneNumber());
-        currentlyLoggedUser.setProfilePrivate(userDto.isProfilePrivate());
-        currentlyLoggedUser.setMessagesEnabled(userDto.isMessagesEnabled());
-        currentlyLoggedUser.setTagsEnabled(userDto.isTagsEnabled());
-
-        if (!userDto.getUsername().equals(currentlyLoggedUser.getUsername())) {
+        if (!userDto.getUsername().equals(newUser.getUsername())) {
             setUsername(userDto.getUsername());
         }
 
-        if (!userDto.getEmail().equals(currentlyLoggedUser.getEmail())) {
+        if (!userDto.getEmail().equals(newUser.getEmail())) {
             setUserEmail(userDto.getEmail());
         }
 
-        updateUserInfoInContentMicroservice(followerMicroserviceUpdateUserDto, token);
-        updateUserInfoInFollowerMicroservice(followerMicroserviceUpdateUserDto, token);
-        // TODO: update messaging microservice
-
-        userRepository.save(currentlyLoggedUser);
+        UpdateUserOrchestrator orchestrator = new UpdateUserOrchestrator(getFollowerMicroserviceWebClient(),
+                updateUserInfoInContentMicroservice(), userRepository, token);
+        return orchestrator.createUser(oldUser, newUser);
     }
 
     @Override
@@ -128,36 +121,18 @@ public class ProfileServiceImpl implements ProfileService {
         return userDtos;
     }
 
-    private void updateUserInfoInFollowerMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto, String token) throws SSLException {
-        WebClient client = WebClient.builder()
+    private WebClient getFollowerMicroserviceWebClient() throws SSLException {
+        return WebClient.builder()
                 .baseUrl(followerMicroserviceURI)
                 .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
-
-        client.put()
-                .uri("/users")
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .headers(h -> h.setBearerAuth(token))
-                .body(Mono.just(followerMicroserviceUserDto), FollowerMicroserviceUserDto.class)
-                .retrieve()
-                .bodyToFlux(String.class)
-                .subscribe();
     }
 
-    private void updateUserInfoInContentMicroservice(FollowerMicroserviceUpdateUserDto followerMicroserviceUserDto, String token) throws SSLException {
-        WebClient client = WebClient.builder()
+    private WebClient updateUserInfoInContentMicroservice() throws SSLException {
+        return WebClient.builder()
                 .baseUrl(contentMicroserviceURI)
                 .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
-
-        client.put()
-                .uri("/profile/updateUser")
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .headers(h -> h.setBearerAuth(token))
-                .body(Mono.just(followerMicroserviceUserDto), FollowerMicroserviceUserDto.class)
-                .retrieve()
-                .bodyToFlux(String.class)
-                .subscribe();
     }
 
     private NistagramUser getCurrentlyLoggedUser() {

@@ -6,6 +6,7 @@ import com.example.pki.logging.LoggerService;
 import com.example.pki.logging.LoggerServiceImpl;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.UserDto;
+import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import com.example.pki.security.TokenUtils;
 import com.example.pki.service.ProfileService;
 import com.example.pki.util.Constants;
@@ -18,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
@@ -52,20 +54,17 @@ public class ProfileController {
     }
 
     @PutMapping("/updateProfileInfo")
-    public ResponseEntity<String> updateProfileInfo(@RequestBody @Valid UserDto userDto, HttpServletRequest request) {
+    public Mono<CreateUserOrchestratorResponse> updateProfileInfo(@RequestBody @Valid UserDto userDto, HttpServletRequest request) {
         try {
             String token = tokenUtils.getToken(request);
-            profileService.updateUserInfo(userDto, token);
-            loggerService.logUpdateUserSuccess(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername());
-            return new ResponseEntity<>("Profile info successfully updated!", HttpStatus.OK);
-
+            return profileService.updateUserInfo(userDto, token);
         } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
             loggerService.logUpdateUserFailed(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername(), e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-
+            return Mono.just(new CreateUserOrchestratorResponse(userDto.getUsername(), false, e.getMessage()));
         } catch (Exception e) {
             loggerService.logUpdateUserFailed(((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername(), e.getMessage());
-            return new ResponseEntity<>("Something went wrong!", HttpStatus.BAD_REQUEST);
+            return Mono.just(new CreateUserOrchestratorResponse(userDto.getUsername(), false, "Something went wrong!"));
+
         }
     }
 

@@ -1,6 +1,6 @@
-package com.example.pki.saga.createuser;
+package com.example.pki.saga.updateuser;
 
-import com.example.pki.model.dto.FollowerMicroserviceUserDto;
+import com.example.pki.model.dto.FollowerMicroserviceUpdateUserDto;
 import com.example.pki.model.dto.saga.FollowerMicroserviceCreateUserResponse;
 import com.example.pki.saga.WorkflowStep;
 import com.example.pki.saga.WorkflowStepStatus;
@@ -9,14 +9,19 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-public class CreateUserInContentMicroserviceWorkflowStep implements WorkflowStep {
+public class UpdateUserInContentMicroserviceWorkflowStep implements WorkflowStep {
     private final WebClient webClient;
-    private final FollowerMicroserviceUserDto userDto;
+    private final FollowerMicroserviceUpdateUserDto oldUser;
+    private final FollowerMicroserviceUpdateUserDto newUser;
+    private final String token;
     private WorkflowStepStatus status = WorkflowStepStatus.PENDING;
 
-    public CreateUserInContentMicroserviceWorkflowStep(WebClient webClient, FollowerMicroserviceUserDto userDto) {
+    public UpdateUserInContentMicroserviceWorkflowStep(WebClient webClient, FollowerMicroserviceUpdateUserDto oldUser,
+                                                       FollowerMicroserviceUpdateUserDto newUser, String token) {
         this.webClient = webClient;
-        this.userDto = userDto;
+        this.oldUser = oldUser;
+        this.newUser = newUser;
+        this.token = token;
     }
 
     @Override
@@ -26,10 +31,12 @@ public class CreateUserInContentMicroserviceWorkflowStep implements WorkflowStep
 
     @Override
     public Mono<Boolean> process() {
-        return webClient.post()
-                .uri("/profile/createNistagramUser")
+        return webClient
+                .put()
+                .uri("/profile/updateUser")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(Mono.just(userDto), FollowerMicroserviceUserDto.class)
+                .headers(h -> h.setBearerAuth(token))
+                .body(Mono.just(newUser), FollowerMicroserviceUpdateUserDto.class)
                 .retrieve()
                 .bodyToMono(FollowerMicroserviceCreateUserResponse.class)
                 .map(FollowerMicroserviceCreateUserResponse::isSuccess)
@@ -38,11 +45,12 @@ public class CreateUserInContentMicroserviceWorkflowStep implements WorkflowStep
 
     @Override
     public Mono<Boolean> revert() {
-        return this.webClient
-                .post()
-                .uri("/profile/deleteNistagramUser")
+        return webClient
+                .put()
+                .uri("/profile/updateUser")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(Mono.just(this.userDto), FollowerMicroserviceUserDto.class)
+                .headers(h -> h.setBearerAuth(token))
+                .body(Mono.just(oldUser), FollowerMicroserviceUpdateUserDto.class)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .map(r -> true)
