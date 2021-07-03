@@ -3,7 +3,6 @@ package com.example.pki.service.impl;
 import com.example.pki.exceptions.EmailAlreadyExistsException;
 import com.example.pki.exceptions.UsernameAlreadyExistsException;
 import com.example.pki.model.NistagramUser;
-import com.example.pki.model.User;
 import com.example.pki.model.dto.UserDto;
 import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import com.example.pki.repository.NistagramUserRepository;
@@ -32,11 +31,14 @@ public class ProfileServiceImpl implements ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final CertificateService certificateService;
 
+    @Value("${FOLLOWER}")
+    private String followerMicroserviceURI;
+
     @Value("${CONTENT}")
     private String contentMicroserviceURI;
 
-    @Value("${FOLLOWER}")
-    private String followerMicroserviceURI;
+    @Value("${MESSAGING}")
+    private String messagingMicroserviceURI;
 
     @Autowired
     public ProfileServiceImpl(UserRepository userRepository, NistagramUserRepository nistagramUserRepository,
@@ -55,7 +57,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public Mono<CreateUserOrchestratorResponse> updateUserInfo(UserDto userDto, String token) throws SSLException {
         NistagramUser newUser = getCurrentlyLoggedUser();
-        NistagramUser oldUser = (NistagramUser) userRepository.findByNistagramUsername(newUser.getNistagramUsername());
+        NistagramUser oldUser = newUser.copy();
 
         newUser.setAbout(userDto.getAbout());
         newUser.setName(userDto.getName());
@@ -66,16 +68,20 @@ public class ProfileServiceImpl implements ProfileService {
         newUser.setTagsEnabled(userDto.isTagsEnabled());
 
         if (!userDto.getUsername().equals(newUser.getUsername())) {
-            setUsername(userDto.getUsername());
+            if (userRepository.findByNistagramUsername(userDto.getUsername()) != null)
+                throw new UsernameAlreadyExistsException();
+            newUser.setNistagramUsername(userDto.getUsername());
         }
 
         if (!userDto.getEmail().equals(newUser.getEmail())) {
-            setUserEmail(userDto.getEmail());
+            if (userRepository.findByEmail(userDto.getEmail()) != null)
+                throw new EmailAlreadyExistsException();
+            newUser.setEmail(userDto.getEmail());
         }
 
         UpdateUserOrchestrator orchestrator = new UpdateUserOrchestrator(getFollowerMicroserviceWebClient(),
-                updateUserInfoInContentMicroservice(), userRepository, token);
-        return orchestrator.createUser(oldUser, newUser);
+                getContentMicroserviceWebClient(), getMessagingMicroserviceWebClient(), userRepository, token);
+        return orchestrator.updateUser(oldUser, newUser);
     }
 
     @Override
@@ -128,9 +134,16 @@ public class ProfileServiceImpl implements ProfileService {
                 .build();
     }
 
-    private WebClient updateUserInfoInContentMicroservice() throws SSLException {
+    private WebClient getContentMicroserviceWebClient() throws SSLException {
         return WebClient.builder()
                 .baseUrl(contentMicroserviceURI)
+                .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
+                .build();
+    }
+
+    private WebClient getMessagingMicroserviceWebClient() throws SSLException {
+        return WebClient.builder()
+                .baseUrl(messagingMicroserviceURI)
                 .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
     }
@@ -151,25 +164,5 @@ public class ProfileServiceImpl implements ProfileService {
             var user = (NistagramUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             return user.getUsername();
         }
-    }
-
-    private void setUserEmail(String email) {
-        ArrayList<User> users = (ArrayList<User>) userRepository.findAll();
-        users.forEach(user -> {
-            if (user.getEmail().equals(email)) {
-                throw new EmailAlreadyExistsException();
-            }
-        });
-        getCurrentlyLoggedUser().setEmail(email);
-    }
-
-    private void setUsername(String username) {
-        ArrayList<User> users = (ArrayList<User>) userRepository.findAll();
-        users.forEach(user -> {
-            if (user.getUsername().equals(username)) {
-                throw new UsernameAlreadyExistsException();
-            }
-        });
-        getCurrentlyLoggedUser().setNistagramUsername(username);
     }
 }

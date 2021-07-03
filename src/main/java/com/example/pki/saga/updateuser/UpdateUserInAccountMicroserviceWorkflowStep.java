@@ -32,7 +32,16 @@ public class UpdateUserInAccountMicroserviceWorkflowStep implements WorkflowStep
 
     @Override
     public Mono<Boolean> revert() {
-        userRepository.save(oldUser);
+        newUser.setNistagramUsername(oldUser.getNistagramUsername());
+        newUser.setName(oldUser.getName());
+        newUser.setSurname(oldUser.getSurname());
+        newUser.setEmail(oldUser.getEmail());
+        newUser.setPhoneNumber(oldUser.getPhoneNumber());
+        newUser.setAbout(oldUser.getAbout());
+        newUser.setProfilePrivate(oldUser.isProfilePrivate());
+        newUser.setMessagesEnabled(oldUser.isMessagesEnabled());
+        newUser.setTagsEnabled(oldUser.isTagsEnabled());
+        userRepository.save(newUser);
         return Mono.just(true);
     }
 }

@@ -21,16 +21,19 @@ public class FollowerMicroserviceUpdateUserDto implements Serializable {
 
     private boolean profilePrivate = false;
     private boolean tagsEnabled = false;
+    private boolean messagesEnabled = false;
 
     public FollowerMicroserviceUpdateUserDto() {
     }
 
-    public FollowerMicroserviceUpdateUserDto(String username, String oldUsername, String about, boolean profilePrivate, boolean tagsEnabled) {
+    public FollowerMicroserviceUpdateUserDto(String username, String oldUsername, String about, boolean profilePrivate,
+                                             boolean tagsEnabled, boolean messagesEnabled) {
         this.username = username;
         this.oldUsername = oldUsername;
         this.about = about;
         this.profilePrivate = profilePrivate;
         this.tagsEnabled = tagsEnabled;
+        this.messagesEnabled = messagesEnabled;
     }
 
     public String getUsername() {
@@ -71,5 +74,13 @@ public class FollowerMicroserviceUpdateUserDto implements Serializable {
 
     public void setTagsEnabled(boolean tagsEnabled) {
         this.tagsEnabled = tagsEnabled;
+    }
+
+    public boolean isMessagesEnabled() {
+        return messagesEnabled;
+    }
+
+    public void setMessagesEnabled(boolean messagesEnabled) {
+        this.messagesEnabled = messagesEnabled;
     }
 }
