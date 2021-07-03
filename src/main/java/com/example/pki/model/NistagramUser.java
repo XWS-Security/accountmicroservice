@@ -137,19 +137,18 @@ public class NistagramUser extends User {
         this.tagsEnabled = tagsEnabled;
     }
 
-    @Override
-    public String toString() {
-        return "NistagramUser{" +
-                "about='" + about + '\'' +
-                ", profilePrivate=" + profilePrivate +
-                ", messagesEnabled=" + messagesEnabled +
-                ", tagsEnabled=" + tagsEnabled +
-                ", id=" + id +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", email='" + email + '\'' +
-                ", nistagramUsername='" + nistagramUsername + '\'' +
-                '}';
+    public NistagramUser copy() {
+        NistagramUser clone = new NistagramUser();
+        clone.setNistagramUsername(nistagramUsername);
+        clone.setName(name);
+        clone.setSurname(surname);
+        clone.setEmail(email);
+        clone.setPhoneNumber(phoneNumber);
+        clone.setAbout(about);
+        clone.setProfilePrivate(profilePrivate);
+        clone.setMessagesEnabled(messagesEnabled);
+        clone.setTagsEnabled(tagsEnabled);
+        return clone;
     }
 }
 

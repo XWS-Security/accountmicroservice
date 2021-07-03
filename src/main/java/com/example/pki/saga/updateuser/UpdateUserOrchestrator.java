@@ -17,17 +17,19 @@ import java.util.List;
 public class UpdateUserOrchestrator {
     private final WebClient followerMicroserviceWebClient;
     private final WebClient contentMicroserviceWebClient;
+    private final WebClient messagingMicroserviceWebClient;
     private final UserRepository userRepository;
     private final String token;
 
-    public UpdateUserOrchestrator(WebClient followerMicroserviceWebClient, WebClient contentMicroserviceWebClient, UserRepository userRepository, String token) {
+    public UpdateUserOrchestrator(WebClient followerMicroserviceWebClient, WebClient contentMicroserviceWebClient, WebClient messagingMicroserviceWebClient, UserRepository userRepository, String token) {
         this.followerMicroserviceWebClient = followerMicroserviceWebClient;
         this.contentMicroserviceWebClient = contentMicroserviceWebClient;
+        this.messagingMicroserviceWebClient = messagingMicroserviceWebClient;
         this.userRepository = userRepository;
         this.token = token;
     }
 
-    public Mono<CreateUserOrchestratorResponse> createUser(NistagramUser oldUser, NistagramUser newUser) {
+    public Mono<CreateUserOrchestratorResponse> updateUser(NistagramUser oldUser, NistagramUser newUser) {
         Workflow workflow = this.getCreateUserWorkflow(oldUser, newUser);
         return Flux.fromStream(() -> workflow.getSteps().stream())
                 .flatMap(WorkflowStep::process)
@@ -56,8 +58,9 @@ public class UpdateUserOrchestrator {
         var accountMicroserviceStep = new UpdateUserInAccountMicroserviceWorkflowStep(oldUser, newUser, userRepository);
         var followerMicroserviceStep = new UpdateUserInFollowerMicroserviceWorkflowStep(followerMicroserviceWebClient, oldUserDto, newUserDto, token);
         var contentMicroserviceStep = new UpdateUserInContentMicroserviceWorkflowStep(contentMicroserviceWebClient, oldUserDto, newUserDto, token);
-        // TODO: add other microservices (messaging)
-        return new Workflow(List.of(accountMicroserviceStep, followerMicroserviceStep, contentMicroserviceStep));
+        var messagingMicroserviceStep = new UpdateUserInMessagingMicroserviceWorkflowStep(messagingMicroserviceWebClient, oldUserDto, newUserDto, token);
+        // TODO: add other microservices (campaign)
+        return new Workflow(List.of(accountMicroserviceStep, followerMicroserviceStep, contentMicroserviceStep, messagingMicroserviceStep));
     }
 
     private CreateUserOrchestratorResponse getResponse(String username, boolean success, String message) {
@@ -65,6 +68,7 @@ public class UpdateUserOrchestrator {
     }
 
     private FollowerMicroserviceUpdateUserDto getUserDto(NistagramUser user, NistagramUser otherUser) {
-        return new FollowerMicroserviceUpdateUserDto(user.getUsername(), otherUser.getUsername(), user.getAbout(), user.isProfilePrivate(), user.isTagsEnabled());
+        return new FollowerMicroserviceUpdateUserDto(user.getUsername(), otherUser.getUsername(), user.getAbout(),
+                user.isProfilePrivate(), user.isTagsEnabled(), user.isMessagesEnabled());
     }
 }
