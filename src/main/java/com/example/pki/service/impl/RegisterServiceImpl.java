@@ -3,11 +3,14 @@ package com.example.pki.service.impl;
 import com.example.pki.exceptions.*;
 import com.example.pki.mail.AccountActivationLinkMailFormatter;
 import com.example.pki.mail.MailService;
+import com.example.pki.model.Agent;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.Role;
 import com.example.pki.model.User;
+import com.example.pki.model.dto.RegisterAgentDTO;
 import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
+import com.example.pki.repository.AgentRepository;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.saga.createuser.CreateUserOrchestrator;
 import com.example.pki.service.AuthorityService;
@@ -34,6 +37,7 @@ public class RegisterServiceImpl implements RegisterService {
     private final PasswordEncoder passwordEncoder;
     private final MailService<String> mailService;
     private final CertificateService certificateService;
+    private final AgentRepository agentRepository;
 
     @Value("${FOLLOWER}")
     private String followerMicroserviceURI;
@@ -46,12 +50,13 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Autowired
     public RegisterServiceImpl(UserRepository userRepository, AuthorityService authService, PasswordEncoder passwordEncoder,
-                               MailService<String> mailService, CertificateService certificateService) {
+                               MailService<String> mailService, CertificateService certificateService, AgentRepository agentRepository) {
         this.userRepository = userRepository;
         this.authService = authService;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
         this.certificateService = certificateService;
+        this.agentRepository = agentRepository;
     }
 
     @Override
@@ -136,6 +141,24 @@ public class RegisterServiceImpl implements RegisterService {
             return findByEmail(email) != null || findByUsername(username) != null;
         } catch (Exception e) {
             return true;
+        }
+    }
+
+    @Override
+    public void registerAgent(RegisterAgentDTO registerAgentDTO) {
+        try{
+            Agent agent = new Agent();
+            agent.setName(registerAgentDTO.getName());
+            agent.setSurname(registerAgentDTO.getSurname());
+            agent.setEmail(registerAgentDTO.getEmail());
+            agent.setNistagramUsername(registerAgentDTO.getUsername());
+            agent.setPassword(registerAgentDTO.getPassword());
+            agent.setAboutAgent(registerAgentDTO.getAbout());
+            agent.setWebsite(registerAgentDTO.getWebsite());
+            agent.setEnabled(false);
+            agentRepository.save(agent);
+        }catch (Exception e){
+            throw e;
         }
     }
 

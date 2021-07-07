@@ -1,5 +1,6 @@
 package com.example.pki.service;
 
+import com.example.pki.model.dto.RegisterAgentDTO;
 import com.example.pki.model.dto.VerificationRequestDto;
 import com.example.pki.model.enums.VerificationStatus;
 
@@ -17,4 +18,8 @@ public interface VerificationService {
     void approve(Long id);
 
     void reject(Long id);
+
+    List<RegisterAgentDTO> getAgents();
+
+    void approveAgent(String username);
 }

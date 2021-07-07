@@ -1,8 +1,10 @@
 package com.example.pki.controller;
 
+import com.example.pki.model.dto.RegisterAgentDTO;
 import com.example.pki.model.dto.VerificationRequestDto;
 import com.example.pki.model.enums.VerificationStatus;
 import com.example.pki.service.VerificationService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,5 +57,16 @@ public class VerificationController {
     public ResponseEntity<String> reject(@PathVariable Long id) {
         verificationService.reject(id);
         return ResponseEntity.ok("Validation rejected");
+    }
+
+    @GetMapping("/agentsAll")
+    public ResponseEntity<List<RegisterAgentDTO>> getAgents() {
+        return new ResponseEntity<>(verificationService.getAgents(), HttpStatus.OK);
+    }
+
+    @PutMapping("/approveAgent/{username}")
+    public ResponseEntity<String> verifyAgent(@PathVariable String username) {
+        verificationService.approveAgent(username);
+        return ResponseEntity.ok("Validation approved");
     }
 }

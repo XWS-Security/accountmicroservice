@@ -3,6 +3,7 @@ package com.example.pki.service;
 import com.example.pki.exceptions.BadActivationCodeException;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.User;
+import com.example.pki.model.dto.RegisterAgentDTO;
 import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import reactor.core.publisher.Mono;
@@ -21,4 +22,6 @@ public interface RegisterService {
     NistagramUser findByUsername(String username);
 
     boolean userExists(String email, String username);
+
+    void registerAgent(RegisterAgentDTO registerAgentDTO);
 }

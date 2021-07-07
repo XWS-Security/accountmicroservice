@@ -91,6 +91,18 @@ public class RegisterController {
         }
     }
 
+    @PostMapping("/registerAgent")
+    public ResponseEntity<String> registerAgent(@RequestBody @Valid RegisterAgentDTO registerAgentDTO) {
+        try {
+            registerService.registerAgent(registerAgentDTO);
+            return new ResponseEntity<>(HttpStatus.OK);
+
+        } catch (Exception e) {
+
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PostMapping("/password/reset")
     public ResponseEntity<String> resetPassword(@RequestBody @Valid ResetPasswordDto resetPasswordDto) {
         try {

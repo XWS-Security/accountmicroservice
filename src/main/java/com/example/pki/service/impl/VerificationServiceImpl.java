@@ -2,10 +2,13 @@ package com.example.pki.service.impl;
 
 import com.example.pki.exceptions.ObjectNotFoundException;
 import com.example.pki.exceptions.UserNotFoundException;
+import com.example.pki.model.Agent;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.VerificationRequest;
+import com.example.pki.model.dto.RegisterAgentDTO;
 import com.example.pki.model.dto.VerificationRequestDto;
 import com.example.pki.model.enums.VerificationStatus;
+import com.example.pki.repository.AgentRepository;
 import com.example.pki.repository.NistagramUserRepository;
 import com.example.pki.repository.VerificationRequestRepository;
 import com.example.pki.service.VerificationService;
@@ -13,17 +16,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class VerificationServiceImpl implements VerificationService {
 
     private final VerificationRequestRepository verificationRequestRepository;
     private final NistagramUserRepository nistagramUserRepository;
+    private final AgentRepository agentRepository;
 
-    public VerificationServiceImpl(VerificationRequestRepository verificationRequestRepository, NistagramUserRepository nistagramUserRepository) {
+    public VerificationServiceImpl(VerificationRequestRepository verificationRequestRepository, NistagramUserRepository nistagramUserRepository, AgentRepository agentRepository) {
         this.verificationRequestRepository = verificationRequestRepository;
         this.nistagramUserRepository = nistagramUserRepository;
+        this.agentRepository = agentRepository;
     }
 
 
@@ -36,6 +43,27 @@ public class VerificationServiceImpl implements VerificationService {
             return VerificationStatus.NOT_VERIFIED;
         }
         throw new UserNotFoundException(username);
+    }
+
+    @Override
+    public List<RegisterAgentDTO> getAgents(){
+        List<RegisterAgentDTO> agentList = new ArrayList<RegisterAgentDTO>();
+        agentRepository.findAll().forEach(agent -> {if(!agent.isEnabled())
+            agentList.add(new RegisterAgentDTO(agent));
+        });
+        return agentList;
+    }
+
+    @Override
+    public void approveAgent(String username){
+        try{
+            Agent agent = agentRepository.findByNistagramUsername(username);
+            agent.setEnabled(true);
+            agentRepository.save(agent);
+        }catch (Exception e){
+            throw e;
+        }
+
     }
 
     @Override
