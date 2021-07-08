@@ -44,6 +44,12 @@ public class NistagramUser extends User {
     @Column(name = "tagsEnabled")
     private boolean tagsEnabled = false;
 
+    @Column(name = "website")
+    protected String website;
+
+    @Column(name = "agent")
+    protected boolean agent = false;
+
     @Override
     public String getAdministrationRole() {
         return administrationRole;
@@ -135,6 +141,22 @@ public class NistagramUser extends User {
 
     public void setTagsEnabled(boolean tagsEnabled) {
         this.tagsEnabled = tagsEnabled;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    public boolean isAgent() {
+        return agent;
+    }
+
+    public void setAgent(boolean agent) {
+        this.agent = agent;
     }
 
     public NistagramUser copy() {

@@ -2,12 +2,14 @@ package com.example.pki.controller;
 
 import com.example.pki.model.dto.RegisterAgentDTO;
 import com.example.pki.model.dto.VerificationRequestDto;
+import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import com.example.pki.model.enums.VerificationStatus;
 import com.example.pki.service.VerificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -71,8 +73,11 @@ public class VerificationController {
     }
 
     @PutMapping("/approveAgent/{username}")
-    public ResponseEntity<String> verifyAgent(@PathVariable String username) {
-        verificationService.approveAgent(username);
-        return ResponseEntity.ok("Validation approved");
+    public Mono<CreateUserOrchestratorResponse> verifyAgent(@PathVariable String username) {
+        try {
+            return verificationService.approveAgent(username);
+        } catch (Exception e) {
+            return Mono.just(new CreateUserOrchestratorResponse(username, false, "Something went wrong"));
+        }
     }
 }

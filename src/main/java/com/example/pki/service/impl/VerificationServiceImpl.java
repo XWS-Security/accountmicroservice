@@ -2,34 +2,38 @@ package com.example.pki.service.impl;
 
 import com.example.pki.exceptions.ObjectNotFoundException;
 import com.example.pki.exceptions.UserNotFoundException;
-import com.example.pki.model.Agent;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.VerificationRequest;
 import com.example.pki.model.dto.RegisterAgentDTO;
 import com.example.pki.model.dto.VerificationRequestDto;
+import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import com.example.pki.model.enums.VerificationStatus;
-import com.example.pki.repository.AgentRepository;
 import com.example.pki.repository.NistagramUserRepository;
+import com.example.pki.repository.UserRepository;
 import com.example.pki.repository.VerificationRequestRepository;
+import com.example.pki.service.RegisterService;
 import com.example.pki.service.VerificationService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
+import javax.net.ssl.SSLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class VerificationServiceImpl implements VerificationService {
-
     private final VerificationRequestRepository verificationRequestRepository;
     private final NistagramUserRepository nistagramUserRepository;
-    private final AgentRepository agentRepository;
+    private final UserRepository userRepository;
+    private final RegisterService registerService;
 
-    public VerificationServiceImpl(VerificationRequestRepository verificationRequestRepository, NistagramUserRepository nistagramUserRepository, AgentRepository agentRepository) {
+    public VerificationServiceImpl(VerificationRequestRepository verificationRequestRepository, NistagramUserRepository nistagramUserRepository, UserRepository userRepository, RegisterService registerService) {
         this.verificationRequestRepository = verificationRequestRepository;
         this.nistagramUserRepository = nistagramUserRepository;
-        this.agentRepository = agentRepository;
+        this.userRepository = userRepository;
+        this.registerService = registerService;
     }
 
 
@@ -45,24 +49,21 @@ public class VerificationServiceImpl implements VerificationService {
     }
 
     @Override
-    public List<RegisterAgentDTO> getAgents(){
+    public List<RegisterAgentDTO> getAgents() {
         List<RegisterAgentDTO> agentList = new ArrayList<RegisterAgentDTO>();
-        agentRepository.findAll().forEach(agent -> {if(!agent.isEnabled())
-            agentList.add(new RegisterAgentDTO(agent));
+        nistagramUserRepository.findAll().forEach(agent -> {
+            if (!agent.isEnabled() && agent.isAgent())
+                agentList.add(new RegisterAgentDTO(agent));
         });
         return agentList;
     }
 
     @Override
-    public void approveAgent(String username){
-        try{
-            Agent agent = agentRepository.findByNistagramUsername(username);
-            agent.setEnabled(true);
-            agentRepository.save(agent);
-        }catch (Exception e){
-            throw e;
-        }
-
+    public Mono<CreateUserOrchestratorResponse> approveAgent(String username) throws SSLException {
+        NistagramUser agent = (NistagramUser) userRepository.findByNistagramUsername(username);
+        agent.setEnabled(true);
+        userRepository.save(agent);
+        return registerService.createAgentInOtherMicroservices(agent);
     }
 
     @Override
@@ -148,8 +149,8 @@ public class VerificationServiceImpl implements VerificationService {
     public List<String> getInfluencers(String username) {
         var influencers = nistagramUserRepository.findInfluencers();
         var user = getCurrentlyLoggedUser();
-        if(user!=null){
-            return influencers.stream().filter(s ->!s.equals(user.getUsername()) && s.toLowerCase().contains(username.toLowerCase())).collect(Collectors.toList());
+        if (user != null) {
+            return influencers.stream().filter(s -> !s.equals(user.getUsername()) && s.toLowerCase().contains(username.toLowerCase())).collect(Collectors.toList());
         }
         throw new UserNotFoundException();
     }

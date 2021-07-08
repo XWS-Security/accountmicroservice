@@ -3,13 +3,9 @@ package com.example.pki.service.impl;
 import com.example.pki.exceptions.EmailAlreadyExistsException;
 import com.example.pki.exceptions.UsernameAlreadyExistsException;
 import com.example.pki.model.NistagramUser;
-import com.example.pki.model.User;
 import com.example.pki.model.dto.BasicUserInfoDto;
-import com.example.pki.model.dto.FollowerMicroserviceUpdateUserDto;
-import com.example.pki.model.dto.FollowerMicroserviceUserDto;
 import com.example.pki.model.dto.UserDto;
 import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
-import com.example.pki.model.enums.Gender;
 import com.example.pki.repository.NistagramUserRepository;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.saga.updateuser.UpdateUserOrchestrator;
@@ -46,6 +42,9 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Value("${MESSAGING}")
     private String messagingMicroserviceURI;
+
+    @Value("${CAMPAIGN}")
+    private String campaignMicroserviceURI;
 
     @Autowired
     public ProfileServiceImpl(UserRepository userRepository, NistagramUserRepository nistagramUserRepository,
@@ -87,7 +86,7 @@ public class ProfileServiceImpl implements ProfileService {
         }
 
         UpdateUserOrchestrator orchestrator = new UpdateUserOrchestrator(getFollowerMicroserviceWebClient(),
-                getContentMicroserviceWebClient(), getMessagingMicroserviceWebClient(), userRepository, token);
+                getContentMicroserviceWebClient(), getMessagingMicroserviceWebClient(), getCampaignMicroserviceWebClient(), userRepository, token);
         return orchestrator.updateUser(oldUser, newUser);
     }
 
@@ -151,6 +150,13 @@ public class ProfileServiceImpl implements ProfileService {
     private WebClient getMessagingMicroserviceWebClient() throws SSLException {
         return WebClient.builder()
                 .baseUrl(messagingMicroserviceURI)
+                .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
+                .build();
+    }
+
+    private WebClient getCampaignMicroserviceWebClient() throws SSLException {
+        return WebClient.builder()
+                .baseUrl(campaignMicroserviceURI)
                 .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
     }

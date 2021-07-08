@@ -3,6 +3,7 @@ package com.example.pki.service.impl;
 import com.example.pki.exceptions.*;
 import com.example.pki.mail.MailService;
 import com.example.pki.mail.PasswordResetMailFormatter;
+import com.example.pki.model.NistagramUser;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.ChangePasswordDto;
 import com.example.pki.model.dto.ResetPasswordDto;
@@ -104,6 +105,10 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         String userType = user.getClass().getSimpleName();
         String accessToken = tokenUtils.generateToken(username);
         int accessExpiresIn = tokenUtils.getExpiredIn();
-        return new UserTokenState(userType, accessToken, accessExpiresIn);
+        boolean agent = false;
+        if (user instanceof NistagramUser) {
+            agent = ((NistagramUser) user).isAgent();
+        }
+        return new UserTokenState(userType, accessToken, accessExpiresIn, agent);
     }
 }

@@ -3,7 +3,6 @@ package com.example.pki.service.impl;
 import com.example.pki.exceptions.*;
 import com.example.pki.mail.AccountActivationLinkMailFormatter;
 import com.example.pki.mail.MailService;
-import com.example.pki.model.Agent;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.Role;
 import com.example.pki.model.User;
@@ -12,6 +11,7 @@ import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import com.example.pki.repository.AgentRepository;
 import com.example.pki.repository.UserRepository;
+import com.example.pki.saga.createuser.CreateAgentOrchestrator;
 import com.example.pki.saga.createuser.CreateUserOrchestrator;
 import com.example.pki.service.AuthorityService;
 import com.example.pki.service.CertificateService;
@@ -37,7 +37,6 @@ public class RegisterServiceImpl implements RegisterService {
     private final PasswordEncoder passwordEncoder;
     private final MailService<String> mailService;
     private final CertificateService certificateService;
-    private final AgentRepository agentRepository;
 
     @Value("${FOLLOWER}")
     private String followerMicroserviceURI;
@@ -48,20 +47,21 @@ public class RegisterServiceImpl implements RegisterService {
     @Value("${MESSAGING}")
     private String messagingMicroserviceURI;
 
+    @Value("${CAMPAIGN}")
+    private String campaignMicroserviceURI;
+
     @Autowired
     public RegisterServiceImpl(UserRepository userRepository, AuthorityService authService, PasswordEncoder passwordEncoder,
-                               MailService<String> mailService, CertificateService certificateService, AgentRepository agentRepository) {
+                               MailService<String> mailService, CertificateService certificateService) {
         this.userRepository = userRepository;
         this.authService = authService;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
         this.certificateService = certificateService;
-        this.agentRepository = agentRepository;
     }
 
     @Override
     public Mono<CreateUserOrchestratorResponse> register(RegisterDto dto, String siteURL) throws MessagingException, PasswordIsNotValid, SSLException {
-
         if (!dto.getPassword().equals(dto.getRepeatedPassword())) {
             throw new PasswordsDoNotMatch();
         }
@@ -146,20 +146,32 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Override
     public void registerAgent(RegisterAgentDTO registerAgentDTO) {
-        try{
-            Agent agent = new Agent();
+        try {
+            NistagramUser agent = new NistagramUser();
             agent.setName(registerAgentDTO.getName());
             agent.setSurname(registerAgentDTO.getSurname());
             agent.setEmail(registerAgentDTO.getEmail());
             agent.setNistagramUsername(registerAgentDTO.getUsername());
-            agent.setPassword(registerAgentDTO.getPassword());
-            agent.setAboutAgent(registerAgentDTO.getAbout());
+            agent.setPassword(passwordEncoder.encode(registerAgentDTO.getPassword()));
+            agent.setAbout(registerAgentDTO.getAbout());
             agent.setWebsite(registerAgentDTO.getWebsite());
             agent.setEnabled(false);
-            agentRepository.save(agent);
-        }catch (Exception e){
+            agent.setAgent(true);
+            List<Role> roles = authService.findByname(agent.getAdministrationRole());
+            List<Role> agentRoles = authService.findByname("ROLE_AGENT");
+            roles.addAll(agentRoles);
+            agent.setRoles(roles);
+            userRepository.save(agent);
+        } catch (Exception e) {
             throw e;
         }
+    }
+
+    @Override
+    public Mono<CreateUserOrchestratorResponse> createAgentInOtherMicroservices(NistagramUser agent) throws SSLException {
+        var orchestrator = new CreateAgentOrchestrator(getFollowerMicroserviceWebClient(),
+                getContentMicroserviceWebClient(), getMessagingMicroserviceWebClient(), getCampaignMicroserviceWebClient());
+        return orchestrator.createUser(agent);
     }
 
     private void sendActivationLink(NistagramUser nistagramUser, String siteUrl) throws MessagingException {
@@ -192,6 +204,13 @@ public class RegisterServiceImpl implements RegisterService {
     private WebClient getMessagingMicroserviceWebClient() throws SSLException {
         return WebClient.builder()
                 .baseUrl(messagingMicroserviceURI)
+                .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
+                .build();
+    }
+
+    private WebClient getCampaignMicroserviceWebClient() throws SSLException {
+        return WebClient.builder()
+                .baseUrl(campaignMicroserviceURI)
                 .clientConnector(new ReactorClientHttpConnector(certificateService.buildHttpClient()))
                 .build();
     }

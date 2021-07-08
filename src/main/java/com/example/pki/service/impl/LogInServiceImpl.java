@@ -4,6 +4,7 @@ import com.example.pki.exceptions.InvalidTwoFactorAuthSecretException;
 import com.example.pki.exceptions.TwoFactorAuthSecretTriesExceededException;
 import com.example.pki.mail.MailService;
 import com.example.pki.mail.PasswordResetMailFormatter;
+import com.example.pki.model.NistagramUser;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.LogInDto;
 import com.example.pki.model.dto.UserTokenState;
@@ -57,7 +58,13 @@ public class LogInServiceImpl implements LogInService {
             int accessExpiresIn = tokenUtils.getExpiredIn();
             user.resetTwoAuthFactorCount();
             userRepository.save(user);
-            return new UserTokenState(userType, accessToken, accessExpiresIn);
+
+            boolean agent = false;
+            if (user instanceof NistagramUser) {
+                agent = ((NistagramUser) user).isAgent();
+            }
+
+            return new UserTokenState(userType, accessToken, accessExpiresIn, agent);
         }
     }
 

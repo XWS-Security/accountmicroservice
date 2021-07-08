@@ -2,8 +2,11 @@ package com.example.pki.service;
 
 import com.example.pki.model.dto.RegisterAgentDTO;
 import com.example.pki.model.dto.VerificationRequestDto;
+import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import com.example.pki.model.enums.VerificationStatus;
+import reactor.core.publisher.Mono;
 
+import javax.net.ssl.SSLException;
 import java.util.List;
 
 public interface VerificationService {
@@ -23,5 +26,5 @@ public interface VerificationService {
 
     List<RegisterAgentDTO> getAgents();
 
-    void approveAgent(String username);
+    Mono<CreateUserOrchestratorResponse> approveAgent(String username) throws SSLException;
 }

@@ -1,8 +1,8 @@
 package com.example.pki.repository;
 
-import com.example.pki.model.Agent;
+import com.example.pki.model.TokenOwner;
 import org.springframework.data.repository.CrudRepository;
 
-public interface AgentRepository extends CrudRepository<Agent, Long>{
-    Agent findByNistagramUsername(String username);
+public interface AgentRepository extends CrudRepository<TokenOwner, Long>{
+    TokenOwner findByNistagramUsername(String username);
 }
