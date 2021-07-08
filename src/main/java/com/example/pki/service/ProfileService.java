@@ -1,5 +1,6 @@
 package com.example.pki.service;
 
+import com.example.pki.model.dto.BasicUserInfoDto;
 import com.example.pki.model.dto.UserDto;
 import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import reactor.core.publisher.Mono;
@@ -18,4 +19,6 @@ public interface ProfileService {
     List<UserDto> findNistagramUser(String nistagramUsername);
 
     String getUsername();
+
+    BasicUserInfoDto extractUserInfo(String username);
 }

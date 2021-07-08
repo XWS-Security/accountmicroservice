@@ -5,6 +5,7 @@ import com.example.pki.exceptions.UsernameAlreadyExistsException;
 import com.example.pki.logging.LoggerService;
 import com.example.pki.logging.LoggerServiceImpl;
 import com.example.pki.model.User;
+import com.example.pki.model.dto.BasicUserInfoDto;
 import com.example.pki.model.dto.UserDto;
 import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
 import com.example.pki.security.TokenUtils;
@@ -46,6 +47,11 @@ public class ProfileController {
     @GetMapping("/getUserInfo")
     public ResponseEntity<UserDto> getUserInfo() {
         return new ResponseEntity<>(profileService.extractUserInfo(), HttpStatus.OK);
+    }
+
+    @GetMapping("/getBasicUserInfo/{username}")
+    public ResponseEntity<BasicUserInfoDto> getUserInfo(@PathVariable String username) {
+        return new ResponseEntity<>(profileService.extractUserInfo(username), HttpStatus.OK);
     }
 
     @GetMapping("/username")

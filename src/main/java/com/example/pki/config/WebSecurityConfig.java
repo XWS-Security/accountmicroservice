@@ -65,6 +65,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/login/**").permitAll()
                 .antMatchers("/profile/getAllUsers").permitAll()
                 .antMatchers("/profile/username").permitAll()
+                .antMatchers("/profile/getBasicUserInfo/{username}").permitAll()
                 .antMatchers("/profile/searchUser/{nistagramUsername}").permitAll()
                 .antMatchers("/verification/status/{username}").permitAll()
                 .antMatchers("/verification/").permitAll()
