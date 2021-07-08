@@ -96,9 +96,7 @@ public class RegisterController {
         try {
             registerService.registerAgent(registerAgentDTO);
             return new ResponseEntity<>(HttpStatus.OK);
-
         } catch (Exception e) {
-
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

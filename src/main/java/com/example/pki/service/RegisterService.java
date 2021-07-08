@@ -24,4 +24,6 @@ public interface RegisterService {
     boolean userExists(String email, String username);
 
     void registerAgent(RegisterAgentDTO registerAgentDTO);
+
+    Mono<CreateUserOrchestratorResponse> createAgentInOtherMicroservices(NistagramUser agent) throws SSLException;
 }

@@ -12,10 +12,10 @@ public class Role {
 
     @Id
     @Column(name = "id")
-    Long id;
+    private Long id;
 
     @Column(name = "name")
-    String name;
+    private String name;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "roles_privileges",

@@ -1,12 +1,8 @@
 package com.example.pki.model.dto;
 
-import com.example.pki.model.Agent;
-import com.example.pki.model.enums.Gender;
-import com.example.pki.util.Constants;
+import com.example.pki.model.NistagramUser;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import java.util.Date;
 
 public class RegisterAgentDTO {
     @NotNull
@@ -55,12 +51,12 @@ public class RegisterAgentDTO {
         this.website = website;
     }
 
-    public RegisterAgentDTO(Agent agent) {
+    public RegisterAgentDTO(NistagramUser agent) {
         this.username = agent.getUsername();
         this.name = agent.getName();
         this.surname = agent.getSurname();
         this.email = agent.getEmail();
-        this.about = agent.getAboutAgent();
+        this.about = agent.getAbout();
         this.website = agent.getWebsite();
     }
 

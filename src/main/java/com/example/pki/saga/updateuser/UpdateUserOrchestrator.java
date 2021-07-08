@@ -12,19 +12,22 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UpdateUserOrchestrator {
     private final WebClient followerMicroserviceWebClient;
     private final WebClient contentMicroserviceWebClient;
     private final WebClient messagingMicroserviceWebClient;
+    private final WebClient campaignMicroserviceWebClient;
     private final UserRepository userRepository;
     private final String token;
 
-    public UpdateUserOrchestrator(WebClient followerMicroserviceWebClient, WebClient contentMicroserviceWebClient, WebClient messagingMicroserviceWebClient, UserRepository userRepository, String token) {
+    public UpdateUserOrchestrator(WebClient followerMicroserviceWebClient, WebClient contentMicroserviceWebClient, WebClient messagingMicroserviceWebClient, WebClient campaignMicroserviceWebClient, UserRepository userRepository, String token) {
         this.followerMicroserviceWebClient = followerMicroserviceWebClient;
         this.contentMicroserviceWebClient = contentMicroserviceWebClient;
         this.messagingMicroserviceWebClient = messagingMicroserviceWebClient;
+        this.campaignMicroserviceWebClient = campaignMicroserviceWebClient;
         this.userRepository = userRepository;
         this.token = token;
     }
@@ -59,8 +62,13 @@ public class UpdateUserOrchestrator {
         var followerMicroserviceStep = new UpdateUserInFollowerMicroserviceWorkflowStep(followerMicroserviceWebClient, oldUserDto, newUserDto, token);
         var contentMicroserviceStep = new UpdateUserInContentMicroserviceWorkflowStep(contentMicroserviceWebClient, oldUserDto, newUserDto, token);
         var messagingMicroserviceStep = new UpdateUserInMessagingMicroserviceWorkflowStep(messagingMicroserviceWebClient, oldUserDto, newUserDto, token);
-        // TODO: add other microservices (campaign)
-        return new Workflow(List.of(accountMicroserviceStep, followerMicroserviceStep, contentMicroserviceStep, messagingMicroserviceStep));
+
+        var steps = new ArrayList<WorkflowStep>(List.of(accountMicroserviceStep, followerMicroserviceStep, contentMicroserviceStep, messagingMicroserviceStep));
+        if (oldUser.isAgent()) {
+            var campaignMicroserviceStep = new UpdateUserInCampaignMicroserviceWorkflowStep(campaignMicroserviceWebClient, oldUserDto, newUserDto, token);
+            steps.add(campaignMicroserviceStep);
+        }
+        return new Workflow(steps);
     }
 
     private CreateUserOrchestratorResponse getResponse(String username, boolean success, String message) {

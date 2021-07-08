@@ -2,6 +2,7 @@ package com.example.pki.controller;
 
 import com.example.pki.logging.LoggerService;
 import com.example.pki.logging.LoggerServiceImpl;
+import com.example.pki.model.NistagramUser;
 import com.example.pki.model.User;
 import com.example.pki.model.dto.LogInDto;
 import com.example.pki.model.dto.UserTokenState;
@@ -70,11 +71,15 @@ public class LoginController {
 
         User user = (User) this.userDetailsService.loadUserByUsername(username);
         String userType = user.getClass().getSimpleName();
+        boolean agent = false;
+        if (user instanceof NistagramUser) {
+            agent = ((NistagramUser) user).isAgent();
+        }
 
         if (this.tokenUtils.canTokenBeRefreshed(token, user.getLastPasswordResetDate())) {
             String refreshedToken = tokenUtils.refreshToken(token);
             int expiresIn = tokenUtils.getExpiredIn();
-            return ResponseEntity.ok(new UserTokenState(userType, refreshedToken, expiresIn));
+            return ResponseEntity.ok(new UserTokenState(userType, refreshedToken, expiresIn, agent));
         } else {
             UserTokenState userTokenState = new UserTokenState();
             return ResponseEntity.badRequest().body(userTokenState);

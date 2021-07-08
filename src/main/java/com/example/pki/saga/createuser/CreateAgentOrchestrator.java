@@ -4,7 +4,6 @@ import com.example.pki.exceptions.CreateUserWorkflowException;
 import com.example.pki.model.NistagramUser;
 import com.example.pki.model.dto.FollowerMicroserviceUserDto;
 import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
-import com.example.pki.repository.UserRepository;
 import com.example.pki.saga.Workflow;
 import com.example.pki.saga.WorkflowStep;
 import com.example.pki.saga.WorkflowStepStatus;
@@ -14,17 +13,18 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public class CreateUserOrchestrator {
+public class CreateAgentOrchestrator {
     private final WebClient followerMicroserviceWebClient;
     private final WebClient contentMicroserviceWebClient;
     private final WebClient messagingMicroserviceWebClient;
-    private final UserRepository userRepository;
+    private final WebClient campaignMicroserviceWebClient;
 
-    public CreateUserOrchestrator(WebClient followerMicroserviceWebClient, WebClient contentMicroserviceWebClient, WebClient messagingMicroserviceWebClient, UserRepository userRepository) {
+    public CreateAgentOrchestrator(WebClient followerMicroserviceWebClient, WebClient contentMicroserviceWebClient,
+                                   WebClient messagingMicroserviceWebClient, WebClient campaignMicroserviceWebClient) {
         this.followerMicroserviceWebClient = followerMicroserviceWebClient;
         this.contentMicroserviceWebClient = contentMicroserviceWebClient;
         this.messagingMicroserviceWebClient = messagingMicroserviceWebClient;
-        this.userRepository = userRepository;
+        this.campaignMicroserviceWebClient = campaignMicroserviceWebClient;
     }
 
     public Mono<CreateUserOrchestratorResponse> createUser(NistagramUser user) {
@@ -52,11 +52,11 @@ public class CreateUserOrchestrator {
 
     private Workflow getCreateUserWorkflow(NistagramUser user) {
         var userDto = getUserDto(user);
-        var accountMicroserviceStep = new CreateUserInAccountMicroserviceWorkflowStep(user, userRepository);
         var followerMicroserviceStep = new CreateUserInFollowerMicroserviceWorkflowStep(followerMicroserviceWebClient, userDto);
         var contentMicroserviceStep = new CreateUserInContentMicroserviceWorkflowStep(contentMicroserviceWebClient, userDto);
         var messagingMicroserviceStep = new CreateUserInMessagingMicroserviceWorkflowStep(messagingMicroserviceWebClient, userDto);
-        return new Workflow(List.of(accountMicroserviceStep, followerMicroserviceStep, contentMicroserviceStep, messagingMicroserviceStep));
+        var campaignMicroserviceStep = new CreateUserInCampaignMicroserviceWorkflowStep(campaignMicroserviceWebClient, userDto);
+        return new Workflow(List.of(followerMicroserviceStep, contentMicroserviceStep, messagingMicroserviceStep, campaignMicroserviceStep));
     }
 
     private CreateUserOrchestratorResponse getResponse(FollowerMicroserviceUserDto userDto, boolean success, String message) {

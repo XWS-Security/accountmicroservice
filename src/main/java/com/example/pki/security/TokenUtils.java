@@ -1,6 +1,7 @@
 package com.example.pki.security;
 
-import com.example.pki.logging.*;
+import com.example.pki.logging.LoggerService;
+import com.example.pki.logging.LoggerServiceImpl;
 import com.example.pki.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

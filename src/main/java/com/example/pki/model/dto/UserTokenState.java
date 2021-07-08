@@ -6,14 +6,16 @@ public class UserTokenState {
     private String userType;
     private String accessToken;
     private int expiresIn;
+    private boolean agent = false;
 
     public UserTokenState() {
     }
 
-    public UserTokenState(String userType, String accessToken, int expiresIn) {
+    public UserTokenState(String userType, String accessToken, int expiresIn, boolean agent) {
         this.userType = userType;
         this.accessToken = accessToken;
         this.expiresIn = expiresIn;
+        this.agent = agent;
     }
 
     public String getUserType() {
@@ -38,6 +40,14 @@ public class UserTokenState {
 
     public void setExpiresIn(int expiresIn) {
         this.expiresIn = expiresIn;
+    }
+
+    public boolean isAgent() {
+        return agent;
+    }
+
+    public void setAgent(boolean agent) {
+        this.agent = agent;
     }
 
     @Override
