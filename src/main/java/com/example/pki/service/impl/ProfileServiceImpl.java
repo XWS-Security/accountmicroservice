@@ -3,8 +3,13 @@ package com.example.pki.service.impl;
 import com.example.pki.exceptions.EmailAlreadyExistsException;
 import com.example.pki.exceptions.UsernameAlreadyExistsException;
 import com.example.pki.model.NistagramUser;
+import com.example.pki.model.User;
+import com.example.pki.model.dto.BasicUserInfoDto;
+import com.example.pki.model.dto.FollowerMicroserviceUpdateUserDto;
+import com.example.pki.model.dto.FollowerMicroserviceUserDto;
 import com.example.pki.model.dto.UserDto;
 import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
+import com.example.pki.model.enums.Gender;
 import com.example.pki.repository.NistagramUserRepository;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.saga.updateuser.UpdateUserOrchestrator;
@@ -21,6 +26,8 @@ import reactor.core.publisher.Mono;
 
 import javax.net.ssl.SSLException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -164,5 +171,21 @@ public class ProfileServiceImpl implements ProfileService {
             var user = (NistagramUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             return user.getUsername();
         }
+    }
+
+    @Override
+    public BasicUserInfoDto extractUserInfo(String username) {
+        var user = nistagramUserRepository.findNistagramUserByNistagramUsername(username);
+        Integer age = getAge(user);
+        return new BasicUserInfoDto(user.getUsername(), user.getGender(), age);
+    }
+
+    private Integer getAge(NistagramUser user) {
+        var currentDate = Calendar.getInstance();
+        currentDate.setTime(new Date());
+        var dateOfBirth = Calendar.getInstance();
+        dateOfBirth.setTime(user.getDateOfBirth());
+        Integer age = currentDate.get(Calendar.YEAR) - dateOfBirth.get(Calendar.YEAR);
+        return age;
     }
 }
