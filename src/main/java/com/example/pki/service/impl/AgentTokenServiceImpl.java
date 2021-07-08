@@ -11,6 +11,7 @@ import com.example.pki.security.TokenUtils;
 import com.example.pki.service.AgentTokenService;
 import com.example.pki.service.AuthorityService;
 import com.example.pki.service.CertificateService;
+import org.jboss.aerogear.security.otp.api.Base32;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -50,7 +51,8 @@ public class AgentTokenServiceImpl implements AgentTokenService {
     private TokenOwner createTokenOwner(NistagramUser user) throws SSLException {
         TokenOwner tokenOwner = new TokenOwner();
         tokenOwner.setLastPasswordResetDate(user.getLastPasswordResetDate());
-        tokenOwner.setNistagramUsername(user.getNistagramUsername() + "token");
+        String username = Base32.random();
+        tokenOwner.setNistagramUsername(username);
         tokenOwner.setRoles(authorityService.findByname(tokenOwner.getAdministrationRole()));
         userRepository.save(tokenOwner);
         createTokenOwnerInCampaignMicroservice(tokenOwner, user.getUsername());
