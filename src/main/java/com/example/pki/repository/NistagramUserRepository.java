@@ -10,9 +10,9 @@ public interface NistagramUserRepository extends CrudRepository<NistagramUser, L
 
     NistagramUser findNistagramUserByNistagramUsername(String nistagramUsername);
 
-    @Query(value = "SELECT u.nistagram_username FROM gram_user as u , verification_request as vr WHERE u.id=vr.user_id AND vr.approved=true AND vr.category=0", nativeQuery = true)
+    @Query(value = "SELECT distinct u.nistagram_username FROM gram_user as u , verification_request as vr WHERE u.id=vr.user_id AND vr.approved=true AND vr.category=0", nativeQuery = true)
     List<String> findInfluencers();
 
-    @Query(value = "SELECT u.nistagram_username FROM gram_user as u , verification_request as vr WHERE u.nistagram_username=:username u.id=vr.user_id AND vr.approved=true AND vr.category=0", nativeQuery = true)
+    @Query(value = "SELECT distinct u.nistagram_username FROM gram_user as u , verification_request as vr WHERE u.nistagram_username=:username AND u.id=vr.user_id AND vr.approved=true AND vr.category=0", nativeQuery = true)
     List<String> findInfluencers(String username);
 }

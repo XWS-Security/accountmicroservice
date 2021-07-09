@@ -27,4 +27,6 @@ public interface VerificationService {
     List<RegisterAgentDTO> getAgents();
 
     Mono<CreateUserOrchestratorResponse> approveAgent(String username) throws SSLException;
+
+    Boolean isUserInfluencer(String username);
 }

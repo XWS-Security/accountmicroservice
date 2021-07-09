@@ -67,6 +67,13 @@ public class VerificationServiceImpl implements VerificationService {
     }
 
     @Override
+    public Boolean isUserInfluencer(String username) {
+        var user = nistagramUserRepository.findNistagramUserByNistagramUsername(username);
+        var usernames = nistagramUserRepository.findInfluencers(username);
+        return usernames.size()>0;
+    }
+
+    @Override
     public void requestVerification(VerificationRequestDto dto) {
         try {
             System.out.println(dto.getCategory());
