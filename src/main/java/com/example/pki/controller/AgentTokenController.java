@@ -19,13 +19,12 @@ public class AgentTokenController {
     }
 
     @GetMapping("/")
-    @PreAuthorize("hasAuthority('CAMPAIGN_PRIVILEGE')")
+    @PreAuthorize("hasAuthority('TOKEN_PRIVILEGE')")
     ResponseEntity<String> getToken() {
         try {
             var result = agentTokenService.get();
             return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

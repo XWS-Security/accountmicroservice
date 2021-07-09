@@ -10,11 +10,13 @@ INSERT INTO PRIVILEGE (id ,name) VALUES (1, 'CERTIFICATE');
 INSERT INTO PRIVILEGE (id ,name) VALUES (2, 'NISTAGRAM_USER_PRIVILEGE');
 INSERT INTO PRIVILEGE (id ,name) VALUES (3, 'FOLLOW_PRIVILEGE');
 INSERT INTO PRIVILEGE (id ,name) VALUES (4, 'CAMPAIGN_PRIVILEGE');
+INSERT INTO PRIVILEGE (id ,name) VALUES (5, 'TOKEN_PRIVILEGE');
 
 INSERT INTO ROLES_PRIVILEGES (role_id, privilege_id) VALUES (1, 1);
 INSERT INTO ROLES_PRIVILEGES (role_id, privilege_id) VALUES (2, 2);
 INSERT INTO ROLES_PRIVILEGES (role_id, privilege_id) VALUES (2, 3);
 INSERT INTO ROLES_PRIVILEGES (role_id, privilege_id) VALUES (3, 4);
+INSERT INTO ROLES_PRIVILEGES (role_id, privilege_id) VALUES (3, 5);
 
 INSERT INTO gram_user (id, user_type , name, surname, email, password, last_password_reset_date, enabled, password_reset_failed, two_factor_auth_count, nistagram_username) VALUES (1, 'ADMINISTRATOR', 'Admin', 'Admin', 'pharmacyisa6+admin@gmail.com', '$2a$10$/b6nrwDAIMHQv/wAeD004u91l/k.973ksiTVbL1yJCKw3TuVaHMf6', '2017-10-01 21:58:58.508-07', true, 0, 0, 'admin');
 
