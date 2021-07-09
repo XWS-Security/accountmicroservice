@@ -18,12 +18,14 @@ public class CreateUserOrchestrator {
     private final WebClient followerMicroserviceWebClient;
     private final WebClient contentMicroserviceWebClient;
     private final WebClient messagingMicroserviceWebClient;
+    private final WebClient campaignMicroserviceWebClient;
     private final UserRepository userRepository;
 
-    public CreateUserOrchestrator(WebClient followerMicroserviceWebClient, WebClient contentMicroserviceWebClient, WebClient messagingMicroserviceWebClient, UserRepository userRepository) {
+    public CreateUserOrchestrator(WebClient followerMicroserviceWebClient, WebClient contentMicroserviceWebClient, WebClient messagingMicroserviceWebClient, WebClient campaignMicroserviceWebClient, UserRepository userRepository) {
         this.followerMicroserviceWebClient = followerMicroserviceWebClient;
         this.contentMicroserviceWebClient = contentMicroserviceWebClient;
         this.messagingMicroserviceWebClient = messagingMicroserviceWebClient;
+        this.campaignMicroserviceWebClient = campaignMicroserviceWebClient;
         this.userRepository = userRepository;
     }
 
@@ -56,7 +58,8 @@ public class CreateUserOrchestrator {
         var followerMicroserviceStep = new CreateUserInFollowerMicroserviceWorkflowStep(followerMicroserviceWebClient, userDto);
         var contentMicroserviceStep = new CreateUserInContentMicroserviceWorkflowStep(contentMicroserviceWebClient, userDto);
         var messagingMicroserviceStep = new CreateUserInMessagingMicroserviceWorkflowStep(messagingMicroserviceWebClient, userDto);
-        return new Workflow(List.of(accountMicroserviceStep, followerMicroserviceStep, contentMicroserviceStep, messagingMicroserviceStep));
+        var campaignMicroserviceStep = new CreateUserInCampaignMicroserviceWorkflowStep(campaignMicroserviceWebClient, userDto);
+        return new Workflow(List.of(accountMicroserviceStep, followerMicroserviceStep, contentMicroserviceStep, messagingMicroserviceStep, campaignMicroserviceStep));
     }
 
     private CreateUserOrchestratorResponse getResponse(FollowerMicroserviceUserDto userDto, boolean success, String message) {

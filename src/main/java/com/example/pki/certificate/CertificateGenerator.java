@@ -55,8 +55,7 @@ public class CertificateGenerator {
             // Extensions for localhost
             DERSequence subjectAlternativeNames = new DERSequence(new ASN1Encodable[]{
                     new GeneralName(GeneralName.dNSName, "localhost"),
-                    new GeneralName(GeneralName.dNSName, "127.0.0.1"),
-                    new GeneralName(GeneralName.dNSName, "campaignmicroservice"),
+                    new GeneralName(GeneralName.dNSName, "127.0.0.1")
             });
             certificateBuilder.addExtension(Extension.subjectAlternativeName, false, subjectAlternativeNames);
 

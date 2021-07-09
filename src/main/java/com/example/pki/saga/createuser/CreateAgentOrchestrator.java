@@ -55,7 +55,7 @@ public class CreateAgentOrchestrator {
         var followerMicroserviceStep = new CreateUserInFollowerMicroserviceWorkflowStep(followerMicroserviceWebClient, userDto);
         var contentMicroserviceStep = new CreateUserInContentMicroserviceWorkflowStep(contentMicroserviceWebClient, userDto);
         var messagingMicroserviceStep = new CreateUserInMessagingMicroserviceWorkflowStep(messagingMicroserviceWebClient, userDto);
-        var campaignMicroserviceStep = new CreateUserInCampaignMicroserviceWorkflowStep(campaignMicroserviceWebClient, userDto);
+        var campaignMicroserviceStep = new CreateAgentInCampaignMicroserviceWorkflowStep(campaignMicroserviceWebClient, userDto);
         return new Workflow(List.of(followerMicroserviceStep, contentMicroserviceStep, messagingMicroserviceStep, campaignMicroserviceStep));
     }
 

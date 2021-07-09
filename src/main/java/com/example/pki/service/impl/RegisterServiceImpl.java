@@ -9,7 +9,6 @@ import com.example.pki.model.User;
 import com.example.pki.model.dto.RegisterAgentDTO;
 import com.example.pki.model.dto.RegisterDto;
 import com.example.pki.model.dto.saga.CreateUserOrchestratorResponse;
-import com.example.pki.repository.AgentRepository;
 import com.example.pki.repository.UserRepository;
 import com.example.pki.saga.createuser.CreateAgentOrchestrator;
 import com.example.pki.saga.createuser.CreateUserOrchestrator;
@@ -93,7 +92,7 @@ public class RegisterServiceImpl implements RegisterService {
         sendActivationLink(user, siteURL);
 
         var orchestrator = new CreateUserOrchestrator(getFollowerMicroserviceWebClient(),
-                getContentMicroserviceWebClient(), getMessagingMicroserviceWebClient(), userRepository);
+                getContentMicroserviceWebClient(), getMessagingMicroserviceWebClient(), getCampaignMicroserviceWebClient(), userRepository);
         return orchestrator.createUser(user);
     }
 
