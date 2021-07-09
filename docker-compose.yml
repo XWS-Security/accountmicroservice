@@ -77,7 +77,62 @@ services:
     volumes:
       - /data/images
       - /data/certificates
+
+  messagingmicroservice:
+    build:
+      context: messagingmicroservice/.
+      dockerfile: Dockerfile
+      args:
+        STAGE: ${STAGE:-dev}
+      target: ${TARGET:-appWebServerRuntime}
+    image: lukadoric/messagingmicroservice
+    container_name: messagingmicroservice
+    restart: on-failure
+    networks:
+      - nistagram-network
+    environment:
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_DOMAIN: ${DATABASE_DOMAIN}
+      DATABASE_SCHEMA: ${DATABASE_MESSAGING_SCHEMA}
+      CONTENT_PATH: ${CONTENT_PATH}
+      MESSAGING_MICROSERVICE_CERTIFICATE: ${MESSAGING_MICROSERVICE_CERTIFICATE}
+      MESSAGING_PORT: ${MESSAGING_PORT}
+      FOLLOWER_MICROSERVICE: ${FOLLOWER_MICROSERVICE}
+    depends_on: 
+      - postgres
+    volumes:
+      - /data/images
+      - /data/certificates
       
+  campaignmicroservice:
+    build:
+      context: campaignmicroservice/.
+      dockerfile: Dockerfile
+      args:
+        STAGE: ${STAGE:-dev}
+      target: ${TARGET:-appWebServerRuntime}
+    image: lukadoric/campaignmicroservice
+    container_name: campaignmicroservice
+    restart: on-failure
+    networks:
+      - nistagram-network
+    environment:
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_DOMAIN: ${DATABASE_DOMAIN}
+      DATABASE_SCHEMA: ${DATABASE_CAMPAIGN_SCHEMA}
+      CONTENT_PATH: ${CONTENT_PATH}
+      CAMPAIGN_MICROSERVICE_CERTIFICATE: ${CAMPAIGN_MICROSERVICE_CERTIFICATE}
+      CAMPAIGN_PORT: ${CAMPAIGN_PORT}
+      ACCOUNT_MICROSERVICE: ${ACCOUNT_MICROSERVICE}
+      FOLLOWER_MICROSERVICE: ${FOLLOWER_MICROSERVICE}
+    depends_on: 
+      - postgres
+    volumes:
+      - /data/images
+      - /data/certificates
+         
   neo4j:
     image: neo4j:4.1.3
     container_name: neo4j
