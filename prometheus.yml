@@ -1,0 +1,5 @@
+scrape_configs:
+  - job_name: 'accountmicroservice'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['accountmicroservice:8080']
