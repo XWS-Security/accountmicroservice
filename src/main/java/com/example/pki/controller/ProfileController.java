@@ -84,6 +84,16 @@ public class ProfileController {
         return new ResponseEntity<>(profileService.findNistagramUser(nistagramUsername), HttpStatus.OK);
     }
 
+    @PutMapping("/remove/{username}")
+    public ResponseEntity<String> removeUser(@PathVariable("username") String username) {
+        try {
+            profileService.disableUser(username);
+            return new ResponseEntity<>("User disabled successfully!", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Something went wrong!", HttpStatus.OK);
+        }
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {

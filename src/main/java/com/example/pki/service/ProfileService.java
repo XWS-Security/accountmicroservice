@@ -21,4 +21,6 @@ public interface ProfileService {
     String getUsername();
 
     BasicUserInfoDto extractUserInfo(String username);
+
+    void disableUser(String username);
 }

@@ -186,6 +186,13 @@ public class ProfileServiceImpl implements ProfileService {
         return new BasicUserInfoDto(user.getUsername(), user.getGender(), age);
     }
 
+    @Override
+    public void disableUser(String username) {
+        NistagramUser user = nistagramUserRepository.findNistagramUserByNistagramUsername(username);
+        user.setEnabled(false);
+        nistagramUserRepository.save(user);
+    }
+
     private Integer getAge(NistagramUser user) {
         var currentDate = Calendar.getInstance();
         currentDate.setTime(new Date());
